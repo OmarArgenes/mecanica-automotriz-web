@@ -1,0 +1,50 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(0, 91, 170, 0.1),
+      transparent 28rem
+    ),
+    #f4f6f9;
+}
+
+.app-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  padding: 28px;
+  min-height: calc(100vh - 78px);
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-content {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-content {
+    padding: 18px;
+    min-height: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-content {
+    padding: 14px;
+  }
+}

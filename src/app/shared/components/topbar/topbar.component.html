@@ -1,0 +1,24 @@
+<header class="topbar">
+  <div>
+    <p class="eyebrow">CANEDO Tecnología Automotriz</p>
+    <h1>Sistema de gestión interna</h1>
+  </div>
+
+  <div class="topbar-actions">
+    <div class="date-pill">
+      {{ today | date: "dd/MM/yyyy" }}
+    </div>
+
+    <a routerLink="/vehicle-intake/new" class="new-intake-button">
+      + Nuevo ingreso
+    </a>
+
+    <div class="user-chip">
+      <span>OQ</span>
+      <div>
+        <strong>Administrador</strong>
+        <small>Operación activa</small>
+      </div>
+    </div>
+  </div>
+</header>

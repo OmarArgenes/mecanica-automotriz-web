@@ -1,0 +1,51 @@
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">
+      <img
+        *ngIf="!logoMissing"
+        src="/images/caned-logo.png"
+        alt="CANEDO Tecnología Automotriz"
+        (error)="logoMissing = true"
+      />
+
+      <div *ngIf="logoMissing" class="brand-fallback">
+        <strong>CANED</strong>
+        <span>Tecnología Automotriz</span>
+      </div>
+    </div>
+  </div>
+
+  <a class="primary-action" routerLink="/vehicle-intake/new">
+    <span class="primary-action__icon">+</span>
+    <span>
+      <strong>Nuevo ingreso</strong>
+      <small>Registrar vehículo</small>
+    </span>
+  </a>
+
+  <nav class="navigation" aria-label="Menú principal">
+    <section *ngFor="let group of menuGroups" class="menu-group">
+      <p class="menu-title">{{ group.title }}</p>
+
+      <a
+        *ngFor="let item of group.items"
+        class="menu-link"
+        [class.menu-link--highlight]="item.highlight"
+        [routerLink]="item.route"
+        routerLinkActive="menu-link--active"
+        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+      >
+        <span class="menu-icon">{{ item.icon }}</span>
+        <span class="menu-label">{{ item.label }}</span>
+      </a>
+    </section>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="status-dot"></span>
+    <div>
+      <strong>Sistema interno</strong>
+      <small>Gestión de taller CANED</small>
+    </div>
+  </div>
+</aside>
