@@ -1,0 +1,60 @@
+<section class="parts-requests-page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Gestión operativa</span>
+      <h1>Solicitudes de Repuestos</h1>
+      <p>
+        Registra las piezas solicitadas para vehículos pendientes y deja la
+        solicitud lista para impresión.
+      </p>
+    </div>
+
+    <a routerLink="/vehicle-intake/new" class="primary-action">
+      + Nuevo ingreso
+    </a>
+  </header>
+
+  <section class="summary-grid" aria-label="Resumen de solicitudes">
+    <article class="summary-card">
+      <span>Solicitudes</span>
+      <strong>{{ totalRequests() }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--pending">
+      <span>Órdenes pendientes</span>
+      <strong>{{ pendingOrders().length }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--provided">
+      <span>Provee taller</span>
+      <strong>{{ totalWorkshopProvided() }}</strong>
+    </article>
+  </section>
+
+  <section class="content-grid">
+    <app-pending-work-orders-list
+      [orders]="pendingOrders()"
+      [selectedOrderId]="selectedOrder()?.id ?? null"
+      (orderSelected)="selectOrder($event)"
+    />
+
+    <div class="right-column">
+      <app-selected-work-order-panel
+        [order]="selectedOrder()"
+        (requestClicked)="openRequestModal()"
+      />
+
+      <app-part-request-history
+        [requests]="selectedOrderRequests()"
+        (printRequested)="printPartRequest($event)"
+      />
+    </div>
+  </section>
+
+  <app-part-request-form-modal
+    *ngIf="isRequestModalOpen() && selectedOrder() as order"
+    [order]="order"
+    (closed)="closeRequestModal()"
+    (saved)="savePartRequest($event)"
+  />
+</section>

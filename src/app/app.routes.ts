@@ -53,12 +53,10 @@ export const routes: Routes = [
       },
       {
         path: 'parts-requests',
-        loadComponent: placeholder,
-        data: {
-          title: 'Solicitudes de repuestos',
-          description:
-            'Registra repuestos solicitados al cliente y genera documentos imprimibles de autorización.',
-        },
+        loadComponent: () =>
+          import('./features/parts-requests/pages/parts-requests-home/parts-requests-home.component').then(
+            (m) => m.PartsRequestsHomeComponent,
+          ),
       },
       {
         path: 'customers',

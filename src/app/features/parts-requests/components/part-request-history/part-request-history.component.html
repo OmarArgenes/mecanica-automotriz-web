@@ -1,0 +1,55 @@
+<section class="history-panel">
+  <header class="panel-header">
+    <div>
+      <span class="eyebrow">Solicitudes registradas</span>
+      <h2>Historial de repuestos</h2>
+    </div>
+
+    <span class="counter">{{ requests.length }}</span>
+  </header>
+
+  <div class="history-list" *ngIf="requests.length > 0; else emptyHistory">
+    <article
+      class="request-card"
+      *ngFor="let request of requests; trackBy: trackByRequestId"
+    >
+      <div class="request-header">
+        <div>
+          <strong>{{ request.requestNumber }}</strong>
+          <span>{{ request.requestedAt }}</span>
+        </div>
+
+        <span
+          class="provider-badge"
+          [class.provider-badge--workshop]="request.workshopProvidesParts"
+        >
+          {{
+            request.workshopProvidesParts ? "Provee taller" : "No provee taller"
+          }}
+        </span>
+      </div>
+
+      <ol class="parts-list">
+        <li *ngFor="let part of request.parts; trackBy: trackByPartId">
+          <span>{{ part.name }}</span>
+          <strong>Cantidad: {{ part.quantity }}</strong>
+        </li>
+      </ol>
+
+      <button
+        type="button"
+        class="print-button"
+        (click)="printRequest(request)"
+      >
+        Imprimir
+      </button>
+    </article>
+  </div>
+
+  <ng-template #emptyHistory>
+    <div class="empty-state">
+      <strong>No hay solicitudes registradas</strong>
+      <span>Cuando guardes una solicitud aparecerá aquí.</span>
+    </div>
+  </ng-template>
+</section>

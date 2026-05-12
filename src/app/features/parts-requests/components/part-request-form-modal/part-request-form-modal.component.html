@@ -1,0 +1,120 @@
+<div class="modal-backdrop" (click)="close()">
+  <section class="modal-card" (click)="$event.stopPropagation()">
+    <header class="modal-header">
+      <div>
+        <span class="eyebrow">Registro de solicitud</span>
+        <h2>Solicitar repuestos</h2>
+      </div>
+
+      <button type="button" class="close-button" (click)="close()">×</button>
+    </header>
+
+    <div class="order-summary">
+      <div>
+        <span>Orden</span>
+        <strong>{{ order.orderNumber }}</strong>
+      </div>
+
+      <div>
+        <span>Vehículo</span>
+        <strong>
+          {{ order.vehicleBrand }} {{ order.vehicleModel }} -
+          {{ order.plateNumber }}
+        </strong>
+      </div>
+    </div>
+
+    <label class="checkbox-row">
+      <input type="checkbox" [(ngModel)]="workshopProvidesParts" />
+      <span>El taller proveerá los repuestos solicitados</span>
+    </label>
+
+    <form class="part-form" (ngSubmit)="addOrUpdatePart()">
+      <div class="form-group form-group--name">
+        <label for="partName">Nombre de la pieza</label>
+        <input
+          id="partName"
+          name="partName"
+          type="text"
+          [(ngModel)]="partName"
+          placeholder="Escribir repuesto y presionar Enter..."
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="form-group form-group--quantity">
+        <label for="quantity">Cantidad</label>
+        <input
+          id="quantity"
+          name="quantity"
+          type="number"
+          min="1"
+          step="1"
+          [(ngModel)]="quantity"
+        />
+      </div>
+
+      <button type="submit" class="add-button">
+        {{ isEditing ? "Actualizar" : "Agregar" }}
+      </button>
+
+      <button
+        *ngIf="isEditing"
+        type="button"
+        class="cancel-edit-button"
+        (click)="cancelEdit()"
+      >
+        Cancelar edición
+      </button>
+    </form>
+
+    <section class="parts-section">
+      <header>
+        <h3>Repuestos solicitados</h3>
+        <span>{{ parts.length }} ítems</span>
+      </header>
+
+      <ol class="parts-list" *ngIf="parts.length > 0; else emptyParts">
+        <li
+          *ngFor="let part of parts; let index = index; trackBy: trackByPartId"
+        >
+          <div class="part-info">
+            <span class="part-number">{{ index + 1 }}.</span>
+
+            <div>
+              <strong>{{ part.name }}</strong>
+              <span>Cantidad: {{ part.quantity }}</span>
+            </div>
+          </div>
+
+          <div class="part-actions">
+            <button type="button" (click)="editPart(part)">Editar</button>
+            <button type="button" class="danger" (click)="deletePart(part.id)">
+              Eliminar
+            </button>
+          </div>
+        </li>
+      </ol>
+
+      <ng-template #emptyParts>
+        <div class="empty-parts">
+          <strong>No agregaste repuestos todavía</strong>
+          <span
+            >Escribe el nombre de la pieza, define cantidad y presiona
+            Enter.</span
+          >
+        </div>
+      </ng-template>
+    </section>
+
+    <footer class="modal-footer">
+      <button type="button" class="secondary-button" (click)="close()">
+        Cancelar
+      </button>
+
+      <button type="button" class="save-button" (click)="save()">
+        Guardar solicitud
+      </button>
+    </footer>
+  </section>
+</div>

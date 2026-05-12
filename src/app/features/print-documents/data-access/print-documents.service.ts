@@ -4,13 +4,18 @@ import { ReceptionPrintDocument } from '../models/reception-print-document.model
 import { WorkOrderPrintDocument } from '../models/work-order-print-document.model';
 import { buildReceptionReceiptTemplate } from '../templates/reception-receipt.template';
 import { buildWorkOrderTemplate } from '../templates/work-order.template';
-
+import { PartRequestPrintDocument } from '../models/part-request-print-document.model';
+import { buildPartRequestTemplate } from '../templates/part-request.template';
 @Injectable({
   providedIn: 'root',
 })
 export class PrintDocumentsService {
   printReceptionReceipt(document: ReceptionPrintDocument): void {
     this.openPrintWindow(buildReceptionReceiptTemplate(document));
+  }
+
+  printPartRequest(document: PartRequestPrintDocument): void {
+    this.openPrintWindow(buildPartRequestTemplate(document));
   }
 
   printWorkOrder(document: WorkOrderPrintDocument): void {
