@@ -1,0 +1,129 @@
+:host {
+  display: block;
+}
+
+.work-orders-page {
+  min-height: 100%;
+  padding: 24px;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(38, 123, 191, 0.08),
+      transparent 32%
+    ),
+    #f5f7fa;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+
+  h1 {
+    margin: 4px 0 6px;
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 850;
+    color: #111827;
+    letter-spacing: -0.7px;
+  }
+
+  p {
+    margin: 0;
+    max-width: 720px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #267bbf;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.primary-action {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: #267bbf;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 12px 24px rgba(38, 123, 191, 0.24);
+  transition: 0.2s ease;
+
+  &:hover {
+    background: #1f6aa5;
+    transform: translateY(-1px);
+  }
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.summary-card {
+  padding: 18px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.055);
+
+  span {
+    display: block;
+    margin-bottom: 8px;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  strong {
+    color: #111827;
+    font-size: 28px;
+    font-weight: 850;
+  }
+
+  &--pending {
+    border-color: #fed7aa;
+    background: linear-gradient(135deg, #ffffff, #fff7ed);
+  }
+
+  &--completed {
+    border-color: #bbf7d0;
+    background: linear-gradient(135deg, #ffffff, #ecfdf5);
+  }
+}
+
+@media (max-width: 820px) {
+  .work-orders-page {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+  }
+
+  .primary-action {
+    width: 100%;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

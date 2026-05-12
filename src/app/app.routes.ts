@@ -41,7 +41,10 @@ export const routes: Routes = [
       },
       {
         path: 'work-orders',
-        loadComponent: placeholder,
+        loadComponent: () =>
+          import('./features/work-orders/pages/work-orders-home/work-orders-home.component').then(
+            (m) => m.WorkOrdersHomeComponent,
+          ),
         data: {
           title: 'Órdenes de trabajo',
           description:
