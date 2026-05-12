@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { PrintDocumentsService } from '../../../print-documents/data-access/print-documents.service';
 
 @Component({
   selector: 'app-vehicle-intake-new',
@@ -12,6 +13,7 @@ import { RouterLink } from '@angular/router';
 })
 export class VehicleIntakeNewComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly printDocumentsService = inject(PrintDocumentsService);
 
   isSaved = false;
   receptionCode = '';
@@ -78,7 +80,36 @@ export class VehicleIntakeNewComponent {
   }
 
   printReceptionReceipt(): void {
-    window.print();
+    this.printDocumentsService.printReceptionReceipt({
+      receptionCode: this.receptionCode,
+      orderCode: this.orderCode,
+
+      customer: {
+        fullName: this.getValue('customerFullName'),
+        phone: this.getValue('customerPhone'),
+        document: this.getValue('customerDocument'),
+        address: this.getValue('customerAddress'),
+      },
+
+      vehicle: {
+        plate: this.getValue('plate'),
+        brand: this.getValue('brand'),
+        model: this.getValue('model'),
+        year: this.getValue('year'),
+        color: this.getValue('color'),
+        mileage: this.getValue('mileage'),
+        fuelType: this.getValue('fuelType'),
+      },
+
+      intake: {
+        date: this.getValue('intakeDate'),
+        time: this.getValue('intakeTime'),
+        arrivalMethod: this.getValue('arrivalMethod'),
+        arrivalState: this.getValue('arrivalState'),
+        reportedProblems: this.getValue('reportedProblems'),
+        initialObservation: this.getValue('initialObservation'),
+      },
+    });
   }
 
   resetForm(): void {
