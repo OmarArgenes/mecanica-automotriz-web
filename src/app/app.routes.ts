@@ -34,12 +34,10 @@ export const routes: Routes = [
       },
       {
         path: 'vehicle-intake/new',
-        loadComponent: placeholder,
-        data: {
-          title: 'Nuevo ingreso de vehículo',
-          description:
-            'Flujo rápido para registrar cliente, vehículo, estado inicial, observaciones e impresión de constancia.',
-        },
+        loadComponent: () =>
+          import('./features/vehicle-intake/pages/vehicle-intake-new/vehicle-intake-new.component').then(
+            (m) => m.VehicleIntakeNewComponent,
+          ),
       },
       {
         path: 'work-orders',

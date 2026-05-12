@@ -1,0 +1,328 @@
+<section class="intake-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Recepción</p>
+      <h1>Nuevo ingreso de vehículo</h1>
+      <p>
+        Registro operativo de cliente, vehículo y condición de ingreso al
+        taller.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/vehicle-intake" class="button button--outline">
+        Volver a recepción
+      </a>
+
+      <a routerLink="/dashboard" class="button button--light"> Dashboard </a>
+    </div>
+  </header>
+
+  <form class="intake-form" [formGroup]="intakeForm" (ngSubmit)="submitForm()">
+    <section class="form-section">
+      <div class="section-header">
+        <span>01</span>
+        <div>
+          <h2>Búsqueda de registro</h2>
+          <p>Consulta por placa, cliente, teléfono o documento.</p>
+        </div>
+      </div>
+
+      <div class="search-row">
+        <input
+          type="text"
+          formControlName="search"
+          placeholder="Placa, cliente, teléfono o CI/NIT"
+        />
+
+        <button type="button" class="button button--dark">Buscar</button>
+      </div>
+    </section>
+
+    <section class="form-grid-layout">
+      <section class="form-section">
+        <div class="section-header">
+          <span>02</span>
+          <div>
+            <h2>Cliente</h2>
+            <p>Datos del propietario o responsable del vehículo.</p>
+          </div>
+        </div>
+
+        <div class="fields-grid">
+          <label class="field field--full">
+            <span>Nombre completo *</span>
+            <input type="text" formControlName="customerFullName" />
+            <small *ngIf="isInvalid('customerFullName')">
+              Campo obligatorio.
+            </small>
+          </label>
+
+          <label class="field">
+            <span>Teléfono / WhatsApp *</span>
+            <input type="text" formControlName="customerPhone" />
+            <small *ngIf="isInvalid('customerPhone')">
+              Campo obligatorio.
+            </small>
+          </label>
+
+          <label class="field">
+            <span>CI / NIT</span>
+            <input type="text" formControlName="customerDocument" />
+          </label>
+
+          <label class="field field--full">
+            <span>Dirección</span>
+            <input type="text" formControlName="customerAddress" />
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-header">
+          <span>03</span>
+          <div>
+            <h2>Vehículo</h2>
+            <p>Identificación del vehículo que ingresa al taller.</p>
+          </div>
+        </div>
+
+        <div class="fields-grid">
+          <label class="field">
+            <span>Placa *</span>
+            <input type="text" formControlName="plate" />
+            <small *ngIf="isInvalid('plate')"> Campo obligatorio. </small>
+          </label>
+
+          <label class="field">
+            <span>Marca *</span>
+            <input type="text" formControlName="brand" />
+            <small *ngIf="isInvalid('brand')"> Campo obligatorio. </small>
+          </label>
+
+          <label class="field">
+            <span>Modelo *</span>
+            <input type="text" formControlName="model" />
+            <small *ngIf="isInvalid('model')"> Campo obligatorio. </small>
+          </label>
+
+          <label class="field">
+            <span>Año</span>
+            <input type="text" formControlName="year" />
+          </label>
+
+          <label class="field">
+            <span>Color</span>
+            <input type="text" formControlName="color" />
+          </label>
+
+          <label class="field">
+            <span>Kilometraje</span>
+            <input type="text" formControlName="mileage" />
+          </label>
+
+          <label class="field field--full">
+            <span>Tipo de combustible</span>
+            <select formControlName="fuelType">
+              <option value="">Seleccionar</option>
+              <option *ngFor="let fuel of fuelTypes" [value]="fuel">
+                {{ fuel }}
+              </option>
+            </select>
+          </label>
+        </div>
+      </section>
+    </section>
+
+    <section class="form-section">
+      <div class="section-header">
+        <span>04</span>
+        <div>
+          <h2>Ingreso al taller</h2>
+          <p>Condición de llegada y problema reportado.</p>
+        </div>
+      </div>
+
+      <div class="fields-grid fields-grid--four">
+        <label class="field">
+          <span>Fecha de ingreso *</span>
+          <input type="date" formControlName="intakeDate" />
+          <small *ngIf="isInvalid('intakeDate')"> Campo obligatorio. </small>
+        </label>
+
+        <label class="field">
+          <span>Hora de ingreso *</span>
+          <input type="time" formControlName="intakeTime" />
+          <small *ngIf="isInvalid('intakeTime')"> Campo obligatorio. </small>
+        </label>
+
+        <label class="field">
+          <span>Cómo llega el vehículo</span>
+          <select formControlName="arrivalMethod">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let method of arrivalMethods" [value]="method">
+              {{ method }}
+            </option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Estado en el que llega *</span>
+          <select formControlName="arrivalState">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let state of arrivalStates" [value]="state">
+              {{ state }}
+            </option>
+          </select>
+          <small *ngIf="isInvalid('arrivalState')"> Campo obligatorio. </small>
+        </label>
+
+        <label class="field field--full">
+          <span>Problemas que presenta *</span>
+          <textarea
+            rows="4"
+            formControlName="reportedProblems"
+            placeholder="Describe el problema reportado por el cliente."
+          ></textarea>
+          <small *ngIf="isInvalid('reportedProblems')">
+            Campo obligatorio.
+          </small>
+        </label>
+
+        <label class="field field--full">
+          <span>Observación inicial</span>
+          <textarea
+            rows="3"
+            formControlName="initialObservation"
+            placeholder="Observaciones visibles al momento de recibir el vehículo."
+          ></textarea>
+        </label>
+      </div>
+    </section>
+
+    <footer class="form-footer" *ngIf="!isSaved">
+      <a routerLink="/vehicle-intake" class="button button--light">
+        Cancelar
+      </a>
+
+      <button type="submit" class="button button--primary">
+        Guardar ingreso
+      </button>
+    </footer>
+
+    <section class="saved-panel" *ngIf="isSaved">
+      <div class="saved-panel__header">
+        <div>
+          <p class="saved-eyebrow">Recepción registrada</p>
+          <h2>Ingreso guardado correctamente</h2>
+        </div>
+
+        <span class="saved-status">En proceso</span>
+      </div>
+
+      <div class="saved-summary">
+        <div>
+          <span>Recepción</span>
+          <strong>{{ receptionCode }}</strong>
+        </div>
+
+        <div>
+          <span>Orden</span>
+          <strong>{{ orderCode }}</strong>
+        </div>
+
+        <div>
+          <span>Placa</span>
+          <strong>{{ getValue("plate") }}</strong>
+        </div>
+
+        <div>
+          <span>Cliente</span>
+          <strong>{{ getValue("customerFullName") }}</strong>
+        </div>
+      </div>
+
+      <div class="saved-actions">
+        <button
+          type="button"
+          class="button button--primary"
+          (click)="printReceptionReceipt()"
+        >
+          Imprimir constancia
+        </button>
+
+        <a routerLink="/work-orders" class="button button--dark">
+          Ver en órdenes
+        </a>
+
+        <button
+          type="button"
+          class="button button--light"
+          (click)="resetForm()"
+        >
+          Nuevo ingreso
+        </button>
+      </div>
+    </section>
+  </form>
+
+  <section class="print-receipt" *ngIf="isSaved">
+    <header class="receipt-header">
+      <div>
+        <h1>CANED Tecnología Automotriz</h1>
+        <p>Diagnóstico, servicio y reparación</p>
+      </div>
+
+      <div>
+        <strong>Constancia de recepción</strong>
+        <span>{{ receptionCode }}</span>
+      </div>
+    </header>
+
+    <div class="receipt-grid">
+      <section>
+        <h2>Cliente</h2>
+        <p><strong>Nombre:</strong> {{ getValue("customerFullName") }}</p>
+        <p><strong>Teléfono:</strong> {{ getValue("customerPhone") }}</p>
+        <p><strong>CI/NIT:</strong> {{ getValue("customerDocument") }}</p>
+        <p><strong>Dirección:</strong> {{ getValue("customerAddress") }}</p>
+      </section>
+
+      <section>
+        <h2>Vehículo</h2>
+        <p><strong>Placa:</strong> {{ getValue("plate") }}</p>
+        <p><strong>Marca:</strong> {{ getValue("brand") }}</p>
+        <p><strong>Modelo:</strong> {{ getValue("model") }}</p>
+        <p><strong>Año:</strong> {{ getValue("year") }}</p>
+        <p><strong>Color:</strong> {{ getValue("color") }}</p>
+        <p><strong>Kilometraje:</strong> {{ getValue("mileage") }}</p>
+      </section>
+    </div>
+
+    <section class="receipt-section">
+      <h2>Ingreso al taller</h2>
+      <p><strong>Fecha:</strong> {{ getValue("intakeDate") }}</p>
+      <p><strong>Hora:</strong> {{ getValue("intakeTime") }}</p>
+      <p><strong>Cómo llega:</strong> {{ getValue("arrivalMethod") }}</p>
+      <p><strong>Estado de llegada:</strong> {{ getValue("arrivalState") }}</p>
+      <p>
+        <strong>Problemas reportados:</strong>
+        {{ getValue("reportedProblems") }}
+      </p>
+      <p>
+        <strong>Observación inicial:</strong>
+        {{ getValue("initialObservation") }}
+      </p>
+    </section>
+
+    <footer class="receipt-footer">
+      <div>
+        <span>Firma recepción</span>
+      </div>
+
+      <div>
+        <span>Firma cliente</span>
+      </div>
+    </footer>
+  </section>
+</section>
