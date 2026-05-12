@@ -1,0 +1,59 @@
+<section class="work-orders-page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Gestión operativa</span>
+      <h1>Órdenes de Trabajo</h1>
+      <p>
+        Control profesional de órdenes pendientes y finalizadas del taller
+        mecánico.
+      </p>
+    </div>
+
+    <a routerLink="/vehicle-intake/new" class="primary-action">
+      + Nueva orden
+    </a>
+  </header>
+
+  <section class="summary-grid" aria-label="Resumen de órdenes">
+    <article class="summary-card">
+      <span>Total órdenes</span>
+      <strong>{{ totalOrders() }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--pending">
+      <span>Pendientes</span>
+      <strong>{{ totalPending() }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--completed">
+      <span>Finalizadas</span>
+      <strong>{{ totalCompleted() }}</strong>
+    </article>
+  </section>
+
+  <app-work-order-list
+    title="Pendientes"
+    subtitle="Órdenes que todavía requieren atención o cierre."
+    statusType="pending"
+    emptyMessage="No hay órdenes pendientes."
+    [orders]="pendingOrders()"
+    (orderSelected)="openOrder($event)"
+  />
+
+  <app-work-order-list
+    title="Finalizados"
+    subtitle="Órdenes cerradas disponibles para revisión o reimpresión."
+    statusType="completed"
+    emptyMessage="No hay órdenes finalizadas."
+    [orders]="completedOrders()"
+    (orderSelected)="openOrder($event)"
+  />
+
+  <app-work-order-detail-modal
+    *ngIf="selectedOrder() as order"
+    [order]="order"
+    (closed)="closeModal()"
+    (printed)="printOrder($event)"
+    (finished)="finishOrder($event)"
+  />
+</section>

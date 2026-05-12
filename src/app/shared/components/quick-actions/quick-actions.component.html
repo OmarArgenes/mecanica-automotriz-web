@@ -1,0 +1,15 @@
+<section class="quick-actions">
+  <a
+    *ngFor="let action of actions"
+    [routerLink]="action.route"
+    class="quick-action"
+    [class.quick-action--danger]="action.tone === 'danger'"
+    [class.quick-action--warning]="action.tone === 'warning'"
+  >
+    <span class="quick-action__plus">+</span>
+    <span>
+      <strong>{{ action.label }}</strong>
+      <small>{{ action.description }}</small>
+    </span>
+  </a>
+</section>

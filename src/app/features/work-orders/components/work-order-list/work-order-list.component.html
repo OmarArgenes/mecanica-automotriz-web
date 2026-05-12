@@ -1,0 +1,83 @@
+<section
+  class="work-order-section"
+  [class.work-order-section--pending]="isPendingList"
+  [class.work-order-section--completed]="!isPendingList"
+>
+  <header class="section-header">
+    <div>
+      <h2>{{ title }}</h2>
+      <p>{{ subtitle }}</p>
+    </div>
+
+    <span class="section-count"> {{ filteredOrders.length }} órdenes </span>
+  </header>
+
+  <div class="search-panel">
+    <div class="search-control">
+      <span class="search-icon">⌕</span>
+
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        [placeholder]="
+          isPendingList
+            ? 'Buscar pendiente por orden, cliente, placa, vehículo o mecánico...'
+            : 'Buscar finalizada por orden, cliente, placa, vehículo o mecánico...'
+        "
+      />
+    </div>
+  </div>
+
+  <div class="list-scroll">
+    <button
+      type="button"
+      class="order-row"
+      *ngFor="let order of filteredOrders; trackBy: trackByOrderId"
+      (click)="selectOrder(order)"
+    >
+      <div class="order-code">
+        <strong>{{ order.orderNumber }}</strong>
+
+        <span
+          class="status-badge"
+          [class.status-badge--pending]="isPendingList"
+          [class.status-badge--completed]="!isPendingList"
+        >
+          {{ isPendingList ? "Pendiente" : "Finalizada" }}
+        </span>
+      </div>
+
+      <div class="order-client">
+        <strong>{{ order.customerName }}</strong>
+        <span>{{ order.customerPhone }}</span>
+      </div>
+
+      <div class="order-vehicle">
+        <strong>{{ order.vehicleBrand }} {{ order.vehicleModel }}</strong>
+        <span>Placa: {{ order.plateNumber }}</span>
+      </div>
+
+      <div class="order-meta">
+        <span>Ingreso: {{ order.receptionDate }}</span>
+        <span *ngIf="!isPendingList"
+          >Finalización: {{ order.completedDate || "-" }}</span
+        >
+        <span>Mecánico: {{ order.mechanicName }}</span>
+      </div>
+
+      <div class="order-action">
+        <span>{{ isPendingList ? "Abrir orden" : "Reimprimir" }}</span>
+        <strong>›</strong>
+      </div>
+    </button>
+
+    <div class="empty-state" *ngIf="filteredOrders.length === 0">
+      <div class="empty-icon">
+        {{ isPendingList ? "⏳" : "✅" }}
+      </div>
+
+      <strong>{{ emptyMessage }}</strong>
+      <span>Intenta limpiar la búsqueda o registrar una nueva orden.</span>
+    </div>
+  </div>
+</section>

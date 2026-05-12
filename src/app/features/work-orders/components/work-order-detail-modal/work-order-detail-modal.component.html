@@ -1,0 +1,133 @@
+<div class="modal-backdrop" (click)="close()">
+  <section
+    class="order-modal"
+    role="dialog"
+    aria-modal="true"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="modal-header">
+      <div>
+        <span class="modal-eyebrow">
+          {{ isPending ? "Orden pendiente" : "Orden finalizada" }}
+        </span>
+
+        <h2>{{ order.orderNumber }}</h2>
+
+        <span
+          class="status-badge"
+          [class.status-badge--pending]="isPending"
+          [class.status-badge--completed]="!isPending"
+        >
+          {{ isPending ? "Pendiente" : "Finalizada" }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="close-button"
+        aria-label="Cerrar modal"
+        (click)="close()"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <section class="info-grid">
+        <article class="info-card">
+          <span>Cliente</span>
+          <strong>{{ order.customerName }}</strong>
+        </article>
+
+        <article class="info-card">
+          <span>Teléfono</span>
+          <strong>{{ order.customerPhone }}</strong>
+        </article>
+
+        <article class="info-card">
+          <span>Vehículo</span>
+          <strong>{{ order.vehicleBrand }} {{ order.vehicleModel }}</strong>
+        </article>
+
+        <article class="info-card">
+          <span>Placa</span>
+          <strong>{{ order.plateNumber }}</strong>
+        </article>
+
+        <article class="info-card">
+          <span>Fecha de ingreso</span>
+          <strong>{{ order.receptionDate }}</strong>
+        </article>
+
+        <article class="info-card">
+          <span>Fecha de finalización</span>
+          <strong>{{ order.completedDate || "-" }}</strong>
+        </article>
+
+        <article class="info-card">
+          <span>Mecánico asignado</span>
+          <strong>{{ order.mechanicName }}</strong>
+        </article>
+
+        <article class="info-card info-card--amount">
+          <span>Total</span>
+
+          <ng-container *ngIf="isPending; else readonlyTotal">
+            <div class="amount-input-wrapper">
+              <span class="currency-label">Bs</span>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="editableTotalAmount"
+                class="amount-input"
+              />
+            </div>
+          </ng-container>
+
+          <ng-template #readonlyTotal>
+            <strong>Bs {{ order.totalAmount }}</strong>
+          </ng-template>
+        </article>
+      </section>
+
+      <section class="description-panel">
+        <span>Problema reportado</span>
+        <p>{{ order.problemDescription }}</p>
+      </section>
+
+      <section class="description-panel">
+        <span>Trabajo realizado / solicitado</span>
+
+        <ng-container *ngIf="isPending; else readonlyWorkDescription">
+          <textarea
+            [(ngModel)]="editableWorkDescription"
+            class="work-description-input"
+            rows="5"
+            placeholder="Describe aquí el trabajo realizado, repuestos utilizados, observaciones y resultado final..."
+          ></textarea>
+        </ng-container>
+
+        <ng-template #readonlyWorkDescription>
+          <p>{{ order.workDescription }}</p>
+        </ng-template>
+      </section>
+    </div>
+
+    <footer class="modal-actions">
+      <button type="button" class="secondary-button" (click)="print()">
+        {{ isPending ? "Imprimir orden" : "Reimprimir orden" }}
+      </button>
+
+      <button
+        *ngIf="isPending"
+        type="button"
+        class="success-button"
+        (click)="finish()"
+      >
+        Finalizar orden
+      </button>
+    </footer>
+  </section>
+</div>

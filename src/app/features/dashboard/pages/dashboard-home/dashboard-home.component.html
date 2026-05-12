@@ -1,0 +1,91 @@
+<section class="dashboard">
+  <div class="hero-panel">
+    <div>
+      <p class="section-label">Panel operativo</p>
+      <h2>Gestión diaria del taller</h2>
+      <p>
+        Accede rápidamente a ingresos, órdenes, repuestos, clientes y vehículos
+        sin navegar por demasiadas pantallas.
+      </p>
+    </div>
+
+    <a routerLink="/vehicle-intake/new" class="hero-button">
+      Crear nuevo ingreso
+    </a>
+  </div>
+
+  <app-quick-actions />
+
+  <section class="stats-grid">
+    <article
+      *ngFor="let stat of stats"
+      class="stat-card"
+      [class.stat-card--red]="stat.tone === 'red'"
+      [class.stat-card--orange]="stat.tone === 'orange'"
+    >
+      <span class="stat-card__label">{{ stat.label }}</span>
+      <strong>{{ stat.value }}</strong>
+      <small>{{ stat.detail }}</small>
+    </article>
+  </section>
+
+  <section class="content-grid">
+    <article class="panel panel--large">
+      <div class="panel-header">
+        <div>
+          <p class="section-label">Recepción</p>
+          <h3>Últimos vehículos ingresados</h3>
+        </div>
+
+        <a routerLink="/vehicle-intake" class="panel-link">Ver todos</a>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Placa</th>
+              <th>Cliente</th>
+              <th>Vehículo</th>
+              <th>Estado</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of recentIntakes">
+              <td>{{ item.time }}</td>
+              <td>
+                <strong class="plate">{{ item.plate }}</strong>
+              </td>
+              <td>{{ item.customer }}</td>
+              <td>{{ item.vehicle }}</td>
+              <td>
+                <span class="status-badge">{{ item.status }}</span>
+              </td>
+              <td class="actions-cell">
+                <button type="button">Ver</button>
+                <button type="button">Imprimir</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel">
+      <p class="section-label">Flujo recomendado</p>
+      <h3>Atención rápida</h3>
+
+      <div class="workflow">
+        <span>1. Cliente</span>
+        <span>2. Vehículo</span>
+        <span>3. Ingreso</span>
+        <span>4. Orden</span>
+        <span>5. Repuestos</span>
+        <span>6. Impresión</span>
+      </div>
+    </article>
+  </section>
+</section>
