@@ -1,0 +1,49 @@
+<section class="orders-panel">
+  <header class="panel-header">
+    <div>
+      <span class="eyebrow">Órdenes pendientes</span>
+      <h2>Vehículos en taller</h2>
+    </div>
+
+    <span class="counter">{{ filteredOrders.length }}</span>
+  </header>
+
+  <div class="search-control">
+    <span>⌕</span>
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      placeholder="Buscar por orden, cliente, placa o vehículo..."
+    />
+  </div>
+
+  <div class="orders-scroll">
+    <button
+      type="button"
+      class="order-card"
+      *ngFor="let order of filteredOrders; trackBy: trackByOrderId"
+      [class.order-card--active]="order.id === selectedOrderId"
+      (click)="selectOrder(order)"
+    >
+      <div class="order-main">
+        <strong>{{ order.orderNumber }}</strong>
+        <span>{{ order.vehicleBrand }} {{ order.vehicleModel }}</span>
+      </div>
+
+      <div class="order-info">
+        <span>Placa: {{ order.plateNumber }}</span>
+        <span>Cliente: {{ order.customerName }}</span>
+      </div>
+
+      <div class="order-footer">
+        <span>Ingreso: {{ order.receptionDate }}</span>
+        <strong>Seleccionar ›</strong>
+      </div>
+    </button>
+
+    <div class="empty-state" *ngIf="filteredOrders.length === 0">
+      <strong>No hay órdenes pendientes</strong>
+      <span>Registra un nuevo ingreso para solicitar repuestos.</span>
+    </div>
+  </div>
+</section>

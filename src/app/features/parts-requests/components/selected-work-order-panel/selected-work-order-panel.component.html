@@ -1,0 +1,46 @@
+<section class="selected-panel">
+  <ng-container *ngIf="order; else emptySelection">
+    <header>
+      <span class="eyebrow">Orden seleccionada</span>
+      <h2>{{ order.orderNumber }}</h2>
+    </header>
+
+    <div class="info-grid">
+      <div>
+        <span>Cliente</span>
+        <strong>{{ order.customerName }}</strong>
+      </div>
+
+      <div>
+        <span>Teléfono</span>
+        <strong>{{ order.customerPhone }}</strong>
+      </div>
+
+      <div>
+        <span>Vehículo</span>
+        <strong>{{ order.vehicleBrand }} {{ order.vehicleModel }}</strong>
+      </div>
+
+      <div>
+        <span>Placa</span>
+        <strong>{{ order.plateNumber }}</strong>
+      </div>
+    </div>
+
+    <div class="problem-box">
+      <span>Problema reportado</span>
+      <p>{{ order.problemDescription }}</p>
+    </div>
+
+    <button type="button" class="primary-button" (click)="requestParts()">
+      + Solicitar repuestos
+    </button>
+  </ng-container>
+
+  <ng-template #emptySelection>
+    <div class="empty-panel">
+      <strong>Selecciona una orden pendiente</strong>
+      <span>Luego podrás registrar las piezas solicitadas.</span>
+    </div>
+  </ng-template>
+</section>

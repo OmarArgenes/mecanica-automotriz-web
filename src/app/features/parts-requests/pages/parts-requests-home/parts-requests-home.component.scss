@@ -1,0 +1,138 @@
+.parts-requests-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.8rem;
+  border: 1px solid rgba(0, 31, 84, 0.08);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(0, 31, 84, 0.08);
+
+  h1 {
+    margin: 0.35rem 0;
+    color: #001b4d;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    line-height: 1.1;
+  }
+
+  p {
+    max-width: 720px;
+    margin: 0;
+    color: #5f6c7b;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+.eyebrow {
+  color: #d0061b;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.8rem 1.3rem;
+  border-radius: 999px;
+  background: #d0061b;
+  color: #ffffff;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 14px 28px rgba(208, 6, 27, 0.22);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 32px rgba(208, 6, 27, 0.28);
+  }
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  padding: 1.25rem;
+  border: 1px solid rgba(0, 31, 84, 0.08);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(0, 31, 84, 0.06);
+
+  span {
+    display: block;
+    color: #64748b;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    display: block;
+    margin-top: 0.45rem;
+    color: #001b4d;
+    font-size: 2rem;
+    line-height: 1;
+  }
+}
+
+.summary-card--pending {
+  border-color: rgba(208, 6, 27, 0.16);
+}
+
+.summary-card--provided {
+  border-color: rgba(0, 31, 84, 0.18);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.35fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-header {
+    flex-direction: column;
+    padding: 1.35rem;
+    border-radius: 22px;
+  }
+
+  .primary-action {
+    width: 100%;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
