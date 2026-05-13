@@ -25,12 +25,8 @@ export const routes: Routes = [
       },
       {
         path: 'vehicle-intake',
-        loadComponent: placeholder,
-        data: {
-          title: 'Recepción de vehículos',
-          description:
-            'Registra los vehículos que ingresan al taller, su condición inicial y genera constancias para el cliente.',
-        },
+        pathMatch: 'full',
+        redirectTo: 'vehicle-intake/new',
       },
       {
         path: 'vehicle-intake/new',
