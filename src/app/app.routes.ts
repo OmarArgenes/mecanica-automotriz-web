@@ -67,12 +67,10 @@ export const routes: Routes = [
       },
       {
         path: 'vehicles',
-        loadComponent: placeholder,
-        data: {
-          title: 'Vehículos',
-          description:
-            'Consulta y administra vehículos por placa, cliente, marca, modelo e historial de servicios.',
-        },
+        loadComponent: () =>
+          import('./features/vehicles/pages/vehicles-home/vehicles-home.component').then(
+            (m) => m.VehiclesHomeComponent,
+          ),
       },
       {
         path: 'reports',

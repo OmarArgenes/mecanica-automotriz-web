@@ -1,0 +1,74 @@
+<section class="vehicles-page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Registro principal</span>
+      <h1>Vehículos</h1>
+      <p>
+        Administra los vehículos registrados en el taller, relaciona cada unidad
+        con su cliente y mantén datos básicos como placa, marca, modelo, año,
+        color y observaciones.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/dashboard" class="secondary-action">
+        Volver al Dashboard
+      </a>
+
+      <button type="button" class="primary-action" (click)="openCreateModal()">
+        + Nuevo vehículo
+      </button>
+    </div>
+  </header>
+
+  <section class="summary-grid" aria-label="Resumen de vehículos">
+    <article class="summary-card">
+      <span>Total vehículos</span>
+      <strong>{{ totalVehicles() }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--linked">
+      <span>Clientes relacionados</span>
+      <strong>{{ totalLinkedCustomers() }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--brands">
+      <span>Marcas registradas</span>
+      <strong>{{ totalBrands() }}</strong>
+    </article>
+  </section>
+
+  <section class="vehicles-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Listado de vehículos</h2>
+        <p>
+          Busca por placa, cliente, teléfono, marca, modelo, color, año o VIN.
+        </p>
+      </div>
+
+      <div class="search-box">
+        <span>⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar vehículo..."
+          [value]="searchTerm()"
+          (input)="updateSearchTerm($event)"
+        />
+      </div>
+    </div>
+
+    <app-vehicle-list
+      [vehicles]="filteredVehicles()"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="deleteVehicle($event)"
+    />
+  </section>
+
+  <app-vehicle-form-modal
+    *ngIf="isFormModalOpen()"
+    [vehicle]="vehicleToEdit()"
+    (closed)="closeFormModal()"
+    (saved)="saveVehicle($event)"
+  />
+</section>
