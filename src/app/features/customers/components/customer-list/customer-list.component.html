@@ -1,0 +1,77 @@
+<div class="customers-table-wrapper" *ngIf="customers.length; else emptyState">
+  <table class="customers-table">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Contacto</th>
+        <th>Documento</th>
+        <th>Vehículo</th>
+        <th class="actions-column">Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let customer of customers">
+        <td data-label="Cliente">
+          <div class="customer-main">
+            <span class="avatar">
+              {{ customer.fullName.charAt(0) }}
+            </span>
+
+            <div>
+              <strong>{{ customer.fullName }}</strong>
+              <small>{{
+                customer.address || "Sin dirección registrada"
+              }}</small>
+            </div>
+          </div>
+        </td>
+
+        <td data-label="Contacto">
+          <div class="stacked-info">
+            <strong>{{ customer.phone }}</strong>
+            <small>{{ customer.email || "Sin correo registrado" }}</small>
+          </div>
+        </td>
+
+        <td data-label="Documento">
+          <span class="document-badge">
+            {{ customer.documentNumber || "Sin documento" }}
+          </span>
+        </td>
+
+        <td data-label="Vehículo">
+          <span class="vehicle-text">
+            {{ getVehicleLabel(customer) }}
+          </span>
+        </td>
+        <td data-label="Acciones" class="actions-cell">
+          <div class="row-actions">
+            <button
+              type="button"
+              class="action-button action-button--edit"
+              (click)="requestEdit(customer)"
+            >
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="action-button action-button--delete"
+              (click)="requestDelete(customer)"
+            >
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #emptyState>
+  <div class="empty-state">
+    <strong>No se encontraron clientes</strong>
+    <p>Prueba con otro término de búsqueda o registra un nuevo cliente.</p>
+  </div>
+</ng-template>

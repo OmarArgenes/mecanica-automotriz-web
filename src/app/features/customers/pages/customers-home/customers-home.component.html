@@ -1,0 +1,73 @@
+<section class="customers-page">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Registro principal</span>
+      <h1>Clientes</h1>
+      <p>
+        Administra la información de los clientes del taller, sus datos de
+        contacto y los vehículos relacionados.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/dashboard" class="secondary-action">
+        Volver al Dashboard
+      </a>
+
+      <button type="button" class="primary-action" (click)="openCreateModal()">
+        + Nuevo cliente
+      </button>
+    </div>
+  </header>
+
+  <section class="summary-grid" aria-label="Resumen de clientes">
+    <article class="summary-card">
+      <span>Total clientes</span>
+      <strong>{{ totalCustomers() }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--linked">
+      <span>Clientes con vehículo</span>
+      <strong>{{ customersWithVehicles() }}</strong>
+    </article>
+
+    <article class="summary-card summary-card--vehicles">
+      <span>Vehículos registrados</span>
+      <strong>{{ totalVehicles() }}</strong>
+    </article>
+  </section>
+
+  <section class="customers-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Listado de clientes</h2>
+        <p>
+          Busca por nombre, teléfono, documento, dirección, placa o vehículo.
+        </p>
+      </div>
+
+      <div class="search-box">
+        <span>⌕</span>
+        <input
+          type="search"
+          placeholder="Buscar cliente..."
+          [value]="searchTerm()"
+          (input)="updateSearchTerm($event)"
+        />
+      </div>
+    </div>
+
+    <app-customer-list
+      [customers]="filteredCustomers()"
+      (editRequested)="openEditModal($event)"
+      (deleteRequested)="deleteCustomer($event)"
+    />
+  </section>
+
+  <app-customer-form-modal
+    *ngIf="isFormModalOpen()"
+    [customer]="customerToEdit()"
+    (closed)="closeFormModal()"
+    (saved)="saveCustomer($event)"
+  />
+</section>

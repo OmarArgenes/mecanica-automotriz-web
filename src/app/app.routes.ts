@@ -60,12 +60,10 @@ export const routes: Routes = [
       },
       {
         path: 'customers',
-        loadComponent: placeholder,
-        data: {
-          title: 'Clientes',
-          description:
-            'Administra los datos de clientes, teléfonos, WhatsApp, dirección e historial relacionado.',
-        },
+        loadComponent: () =>
+          import('./features/customers/pages/customers-home/customers-home.component').then(
+            (m) => m.CustomersHomeComponent,
+          ),
       },
       {
         path: 'vehicles',

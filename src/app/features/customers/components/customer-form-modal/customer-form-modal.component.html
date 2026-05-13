@@ -1,0 +1,139 @@
+<div class="modal-backdrop" role="presentation" (click)="closeModal()">
+  <section
+    class="modal-card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="customer-form-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="modal-header">
+      <div>
+        <span class="eyebrow">Clientes</span>
+        <h2 id="customer-form-title">{{ modalTitle }}</h2>
+        <p>{{ modalDescription }}</p>
+      </div>
+
+      <button type="button" class="close-button" (click)="closeModal()">
+        ×
+      </button>
+    </header>
+
+    <form
+      [formGroup]="customerForm"
+      (ngSubmit)="submitForm()"
+      class="modal-form"
+    >
+      <section class="form-section">
+        <h3>Datos del cliente</h3>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span>Nombre completo *</span>
+            <input
+              type="text"
+              formControlName="fullName"
+              placeholder="Ej. Juan Pérez"
+            />
+            <small *ngIf="isInvalid('fullName')">
+              El nombre del cliente es obligatorio.
+            </small>
+          </label>
+
+          <label class="form-field">
+            <span>Documento / CI</span>
+            <input
+              type="text"
+              formControlName="documentNumber"
+              placeholder="Ej. 7845123"
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Teléfono *</span>
+            <input
+              type="tel"
+              formControlName="phone"
+              placeholder="Ej. 70707070"
+            />
+            <small *ngIf="isInvalid('phone')">
+              El teléfono es obligatorio.
+            </small>
+          </label>
+
+          <label class="form-field">
+            <span>WhatsApp</span>
+            <input
+              type="tel"
+              formControlName="whatsapp"
+              placeholder="Ej. 70707070"
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Correo electrónico</span>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="cliente@email.com"
+            />
+            <small *ngIf="isInvalid('email')">
+              Ingresa un correo válido.
+            </small>
+          </label>
+
+          <label class="form-field form-field--full">
+            <span>Dirección</span>
+            <input
+              type="text"
+              formControlName="address"
+              placeholder="Dirección del cliente"
+            />
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3>Vehículo relacionado</h3>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span>Placa</span>
+            <input
+              type="text"
+              formControlName="vehiclePlateNumber"
+              placeholder="Ej. 123ABC"
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Marca</span>
+            <input
+              type="text"
+              formControlName="vehicleBrand"
+              placeholder="Ej. Toyota"
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Modelo</span>
+            <input
+              type="text"
+              formControlName="vehicleModel"
+              placeholder="Ej. Corolla"
+            />
+          </label>
+        </div>
+      </section>
+
+      <footer class="modal-actions">
+        <button type="button" class="secondary-button" (click)="closeModal()">
+          Cancelar
+        </button>
+
+        <button type="submit" class="primary-button">
+          {{ customer ? "Guardar cambios" : "Registrar cliente" }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
