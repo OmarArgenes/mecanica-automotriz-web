@@ -11,10 +11,6 @@ export function buildWorkOrderTemplate(
 
   const statusLabel = isCompleted ? 'Finalizada' : 'Pendiente';
 
-  const workTitle = isCompleted
-    ? 'Trabajo realizado'
-    : 'Trabajo solicitado / diagnóstico';
-
   const totalLabel = isCompleted ? 'Total final' : 'Total registrado';
 
   return `
@@ -33,13 +29,13 @@ export function buildWorkOrderTemplate(
               <img src="/images/caned-logo.png" alt="CANED Tecnología Automotriz" />
             </div>
 
-           <div class="company-info">
-  <h1>CANEDO Tecnología Automotriz</h1>
-  <p>Diagnóstico, servicio y reparación automotriz</p>
-  <p><strong>Tel.:</strong> 4281133 · <strong>Cel.:</strong> 72222827 · <strong>Responsable:</strong> Rubén Zelaya</p>
-  <p><strong>Email:</strong> zcanedo3@hotmai.com</p>
-  <p><strong>Dirección:</strong> Calle F. Veracini entre Calle M. E, Norberto Galdo Ballivian y, Cochabamba, Bolivia</p>
-</div>
+            <div class="company-info">
+              <h1>CANEDO Tecnología Automotriz</h1>
+              <p>Diagnóstico, servicio y reparación automotriz</p>
+              <p><strong>Tel.:</strong> 4281133 · <strong>Cel.:</strong> 72222827 · <strong>Responsable:</strong> Rubén Zelaya</p>
+              <p><strong>Email:</strong> zcanedo3@hotmai.com</p>
+              <p><strong>Dirección:</strong> Calle F. Veracini entre Calle M. E, Norberto Galdo Ballivian y, Cochabamba, Bolivia</p>
+            </div>
 
             <div class="document-meta">
               <strong>${safe(documentTitle)}</strong>
@@ -69,11 +65,12 @@ export function buildWorkOrderTemplate(
           ])}
 
           ${textBlock('Problema reportado', document.problemDescription)}
-          ${textBlock(workTitle, document.workDescription)}
+         
+          ${chargeDetailTable(document)}
 
           <section class="total-box">
             <span>${safe(totalLabel)}</span>
-            <strong>Bs ${display(document.totalAmount)}</strong>
+            <strong>Bs ${displayMoney(document.totalAmount)}</strong>
           </section>
 
           <section class="signature-grid">
@@ -110,33 +107,32 @@ function buildPrintStyles(isCompleted: boolean): string {
       }
 
       @page {
-  size: letter portrait;
-  margin: 0;
-}
+        size: letter portrait;
+        margin: 0;
+      }
 
-html,
-body {
-  width: 21.59cm;
-  height: 27.94cm;
-  margin: 0;
-  padding: 0;
-}
+      html,
+      body {
+        width: 21.59cm;
+        min-height: 27.94cm;
+        margin: 0;
+        padding: 0;
+      }
 
-body {
-  color: #111827;
-  background: #ffffff;
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
+      body {
+        color: #111827;
+        background: #ffffff;
+        font-family: Arial, Helvetica, sans-serif;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
 
-.print-document {
-  width: 21.59cm;
-  height: 13.97cm;
-  padding: 6mm;
-  overflow: hidden;
-  background: #ffffff;
-}
+      .print-document {
+        width: 21.59cm;
+        min-height: 13.97cm;
+        padding: 6mm;
+        background: #ffffff;
+      }
 
       .document-header {
         display: grid;
@@ -169,16 +165,16 @@ body {
       }
 
       .company-info p {
-  margin: 2px 0 0;
-  color: #4b5563;
-  font-size: 8.2px;
-  line-height: 1.25;
-}
+        margin: 2px 0 0;
+        color: #4b5563;
+        font-size: 8.2px;
+        line-height: 1.25;
+      }
 
-.company-info strong {
-  color: #001b4e;
-  font-weight: 900;
-}
+      .company-info strong {
+        color: #001b4e;
+        font-weight: 900;
+      }
 
       .document-meta {
         text-align: right;
@@ -277,6 +273,55 @@ body {
         line-height: 1.35;
       }
 
+      .charge-table {
+        width: 100%;
+        margin-top: 6px;
+        border-collapse: collapse;
+        border: 1px solid #d7dde8;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .charge-table th,
+      .charge-table td {
+        padding: 5px 7px;
+        border-bottom: 1px solid #d7dde8;
+        color: #111827;
+        font-size: 8.4px;
+        line-height: 1.25;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .charge-table th {
+        background: #eef6ff;
+        color: #001b4e;
+        font-size: 7.6px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .charge-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .charge-table .number-column {
+        width: 28px;
+        text-align: center;
+      }
+
+      .charge-table .quantity-column {
+        width: 58px;
+        text-align: center;
+      }
+
+      .charge-table .money-column {
+        width: 82px;
+        text-align: right;
+        font-weight: 900;
+      }
+
       .total-box {
         display: flex;
         justify-content: flex-end;
@@ -357,9 +402,70 @@ function textBlock(label: string, value: string | number | undefined): string {
   `;
 }
 
+function chargeDetailTable(document: WorkOrderPrintDocument): string {
+  const chargeItems = document.chargeItems ?? [];
+
+  if (chargeItems.length === 0) {
+    return `
+      ${sectionTitle('Detalle de cobro final')}
+      <table class="charge-table">
+        <tbody>
+          <tr>
+            <td>Sin detalle de cobro registrado.</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  return `
+    ${sectionTitle('Detalle de cobro final')}
+    <table class="charge-table">
+      <thead>
+        <tr>
+          <th class="number-column">N°</th>
+          <th>Detalle</th>
+          <th class="quantity-column">Cant.</th>
+          <th class="money-column">Monto</th>
+          <th class="money-column">Subtotal</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        ${chargeItems
+          .map(
+            (item, index) => `
+              <tr>
+                <td class="number-column">${index + 1}</td>
+                <td>${safe(item.description)}</td>
+                <td class="quantity-column">${display(item.quantity)}</td>
+                <td class="money-column">Bs ${displayMoney(item.amount)}</td>
+                <td class="money-column">Bs ${displayMoney(item.subtotal)}</td>
+              </tr>
+            `,
+          )
+          .join('')}
+      </tbody>
+    </table>
+  `;
+}
+
 function display(value: string | number | undefined): string {
   const normalizedValue = String(value ?? '').trim();
   return normalizedValue ? safe(normalizedValue) : '—';
+}
+
+function displayMoney(value: string | number | undefined): string {
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return '0';
+  }
+
+  return numericValue.toLocaleString('es-BO', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
 }
 
 function safe(value: string | number | undefined): string {

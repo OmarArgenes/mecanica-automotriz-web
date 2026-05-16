@@ -54,8 +54,17 @@ export class WorkOrdersHomeComponent {
   }
 
   finishOrder(order: WorkOrder): void {
+    const chargeItems = order.chargeItems ?? [];
+
+    if (chargeItems.length === 0) {
+      window.alert(
+        'Debes registrar al menos un detalle de cobro antes de finalizar la orden.',
+      );
+      return;
+    }
+
     const confirmed = window.confirm(
-      `¿Deseas finalizar la orden ${order.orderNumber}? Esta orden pasará a la lista de finalizados.`,
+      `¿Deseas finalizar la orden ${order.orderNumber}? Esta orden pasará a la lista de finalizados con un total de Bs ${order.totalAmount}.`,
     );
 
     if (!confirmed) {
@@ -66,6 +75,7 @@ export class WorkOrdersHomeComponent {
       order.id,
       order.workDescription,
       order.totalAmount,
+      chargeItems,
     );
 
     this.workOrdersService.finishWorkOrder(order.id);
@@ -73,10 +83,13 @@ export class WorkOrdersHomeComponent {
   }
 
   printOrder(order: WorkOrder): void {
+    const chargeItems = order.chargeItems ?? [];
+
     this.workOrdersService.updateWorkOrderDetails(
       order.id,
       order.workDescription,
       order.totalAmount,
+      chargeItems,
     );
 
     this.printDocumentsService.printWorkOrder({
@@ -102,6 +115,7 @@ export class WorkOrdersHomeComponent {
       mechanicName: order.mechanicName,
       problemDescription: order.problemDescription,
       workDescription: order.workDescription,
+      chargeItems,
       totalAmount: order.totalAmount,
     });
   }

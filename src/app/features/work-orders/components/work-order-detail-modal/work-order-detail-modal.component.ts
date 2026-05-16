@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { WorkOrder } from '../../models/work-order.model';
+import { WorkOrder, WorkOrderChargeItem } from '../../models/work-order.model';
 
 @Component({
   selector: 'app-work-order-detail-modal',
@@ -26,13 +26,18 @@ export class WorkOrderDetailModalComponent implements OnChanges {
   @Output() printed = new EventEmitter<WorkOrder>();
   @Output() finished = new EventEmitter<WorkOrder>();
 
-  editableWorkDescription = '';
-  editableTotalAmount = 0;
+  chargeDescription = '';
+  chargeQuantity = 1;
+  chargeAmount: number | null = null;
+  chargeItems: WorkOrderChargeItem[] = [];
+  editingChargeItemId: string | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['order'] && this.order) {
-      this.editableWorkDescription = this.order.workDescription;
-      this.editableTotalAmount = this.order.totalAmount;
+      this.chargeItems = (this.order.chargeItems ?? []).map((item) => ({
+        ...item,
+      }));
+      this.resetChargeForm();
     }
   }
 
@@ -40,12 +45,79 @@ export class WorkOrderDetailModalComponent implements OnChanges {
     return this.order.status === 'pending';
   }
 
+  get isEditingChargeItem(): boolean {
+    return this.editingChargeItemId !== null;
+  }
+
+  get chargeTotal(): number {
+    return this.chargeItems.reduce((total, item) => total + item.subtotal, 0);
+  }
+
   get orderWithEditableValues(): WorkOrder {
     return {
       ...this.order,
-      workDescription: this.editableWorkDescription,
-      totalAmount: Number(this.editableTotalAmount) || 0,
+      workDescription: this.order.workDescription,
+      chargeItems: this.chargeItems.map((item) => ({ ...item })),
+      totalAmount: this.chargeTotal,
     };
+  }
+
+  addOrUpdateChargeItem(): void {
+    const cleanDescription = this.chargeDescription.trim();
+    const cleanQuantity = this.normalizeQuantity(this.chargeQuantity);
+    const cleanAmount = this.normalizeAmount(this.chargeAmount);
+
+    if (!cleanDescription || cleanAmount <= 0) {
+      return;
+    }
+
+    const subtotal = cleanQuantity * cleanAmount;
+
+    if (this.editingChargeItemId) {
+      this.chargeItems = this.chargeItems.map((item) =>
+        item.id === this.editingChargeItemId
+          ? {
+              ...item,
+              description: cleanDescription,
+              quantity: cleanQuantity,
+              amount: cleanAmount,
+              subtotal,
+            }
+          : item,
+      );
+    } else {
+      this.chargeItems = [
+        ...this.chargeItems,
+        {
+          id: crypto.randomUUID(),
+          description: cleanDescription,
+          quantity: cleanQuantity,
+          amount: cleanAmount,
+          subtotal,
+        },
+      ];
+    }
+
+    this.resetChargeForm();
+  }
+
+  editChargeItem(item: WorkOrderChargeItem): void {
+    this.editingChargeItemId = item.id;
+    this.chargeDescription = item.description;
+    this.chargeQuantity = item.quantity;
+    this.chargeAmount = item.amount;
+  }
+
+  deleteChargeItem(itemId: string): void {
+    this.chargeItems = this.chargeItems.filter((item) => item.id !== itemId);
+
+    if (this.editingChargeItemId === itemId) {
+      this.resetChargeForm();
+    }
+  }
+
+  cancelChargeEdit(): void {
+    this.resetChargeForm();
   }
 
   close(): void {
@@ -57,7 +129,45 @@ export class WorkOrderDetailModalComponent implements OnChanges {
   }
 
   finish(): void {
+    if (this.isPending && this.chargeItems.length === 0) {
+      window.alert(
+        'Debes registrar al menos un detalle de cobro antes de finalizar la orden.',
+      );
+      return;
+    }
+
     this.finished.emit(this.orderWithEditableValues);
+  }
+
+  trackByChargeItemId(_: number, item: WorkOrderChargeItem): string {
+    return item.id;
+  }
+
+  private resetChargeForm(): void {
+    this.chargeDescription = '';
+    this.chargeQuantity = 1;
+    this.chargeAmount = null;
+    this.editingChargeItemId = null;
+  }
+
+  private normalizeQuantity(value: number): number {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue) || numericValue < 1) {
+      return 1;
+    }
+
+    return Math.floor(numericValue);
+  }
+
+  private normalizeAmount(value: number | null): number {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue) || numericValue < 0) {
+      return 0;
+    }
+
+    return numericValue;
   }
 
   @HostListener('document:keydown.escape')
