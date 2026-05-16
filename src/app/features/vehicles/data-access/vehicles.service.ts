@@ -1,101 +1,114 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 
-import { Vehicle, VehicleFormValue } from '../models/vehicle.model';
+import { CustomersService } from '../../customers/data-access/customers.service';
+import { VehicleFormValue, VehicleListItem } from '../models/vehicle.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class VehiclesService {
-  private readonly vehiclesSignal = signal<Vehicle[]>([
-    {
-      id: '1',
-      plateNumber: '123ABC',
-      brand: 'Toyota',
-      model: 'Corolla',
-      year: 2018,
-      color: 'Blanco',
-      vin: 'JTDBR32E123456789',
-      customerName: 'Juan Pérez',
-      customerPhone: '70707070',
-      observations: 'Vehículo registrado para mantenimiento general.',
-      registeredAt: '2026-05-12',
-    },
-    {
-      id: '2',
-      plateNumber: '789XYZ',
-      brand: 'Nissan',
-      model: 'March',
-      year: 2020,
-      color: 'Gris',
-      vin: '',
-      customerName: 'María López',
-      customerPhone: '76451230',
-      observations: 'Cliente reportó vibración al frenar.',
-      registeredAt: '2026-05-12',
-    },
-    {
-      id: '3',
-      plateNumber: '456DEF',
-      brand: 'Ford',
-      model: 'Ranger',
-      year: 2019,
-      color: 'Negro',
-      vin: '',
-      customerName: 'Carlos Rojas',
-      customerPhone: '72223344',
-      observations: 'Camioneta registrada para control preventivo.',
-      registeredAt: '2026-05-10',
-    },
-  ]);
+  private readonly customersService = inject(CustomersService);
 
-  readonly vehicles = this.vehiclesSignal.asReadonly();
+  readonly vehicles = computed<VehicleListItem[]>(() =>
+    this.customersService.customers().flatMap((customer) =>
+      customer.vehicles.map((vehicle) => ({
+        ...vehicle,
+        customerId: customer.id,
+        customerName: customer.fullName,
+        customerPhone: customer.phone,
+        customerDocument: customer.documentNumber,
+        registeredAt: customer.registeredAt,
+      })),
+    ),
+  );
 
   createVehicle(formValue: VehicleFormValue): void {
-    const newVehicle: Vehicle = {
-      id: crypto.randomUUID(),
-      plateNumber: this.normalizePlate(formValue.plateNumber),
-      brand: formValue.brand.trim(),
-      model: formValue.model.trim(),
+    this.customersService.addVehicleToCustomer(formValue.customerId, {
+      plateNumber: formValue.plateNumber,
+      brand: formValue.brand,
+      model: formValue.model,
       year: formValue.year ?? null,
-      color: formValue.color?.trim(),
-      vin: formValue.vin?.trim(),
-      customerName: formValue.customerName.trim(),
-      customerPhone: formValue.customerPhone.trim(),
-      observations: formValue.observations?.trim(),
-      registeredAt: new Date().toISOString().split('T')[0],
-    };
-
-    this.vehiclesSignal.update((vehicles) => [newVehicle, ...vehicles]);
+      color: formValue.color,
+      vin: formValue.vin,
+      mileage: formValue.mileage ?? null,
+      observations: formValue.observations,
+    });
   }
 
   updateVehicle(vehicleId: string, formValue: VehicleFormValue): void {
-    this.vehiclesSignal.update((vehicles) =>
-      vehicles.map((vehicle) =>
-        vehicle.id === vehicleId
-          ? {
-              ...vehicle,
-              plateNumber: this.normalizePlate(formValue.plateNumber),
-              brand: formValue.brand.trim(),
-              model: formValue.model.trim(),
-              year: formValue.year ?? null,
-              color: formValue.color?.trim(),
-              vin: formValue.vin?.trim(),
-              customerName: formValue.customerName.trim(),
-              customerPhone: formValue.customerPhone.trim(),
-              observations: formValue.observations?.trim(),
-            }
-          : vehicle,
-      ),
+    const currentVehicle = this.findVehicleOwner(vehicleId);
+
+    if (!currentVehicle) {
+      return;
+    }
+
+    if (currentVehicle.customerId === formValue.customerId) {
+      this.customersService.updateVehicleForCustomer(
+        currentVehicle.customerId,
+        vehicleId,
+        {
+          id: vehicleId,
+          plateNumber: formValue.plateNumber,
+          brand: formValue.brand,
+          model: formValue.model,
+          year: formValue.year ?? null,
+          color: formValue.color,
+          vin: formValue.vin,
+          mileage: formValue.mileage ?? null,
+          observations: formValue.observations,
+        },
+      );
+
+      return;
+    }
+
+    this.customersService.deleteVehicleFromCustomer(
+      currentVehicle.customerId,
+      vehicleId,
     );
+
+    this.customersService.addVehicleToCustomer(formValue.customerId, {
+      id: vehicleId,
+      plateNumber: formValue.plateNumber,
+      brand: formValue.brand,
+      model: formValue.model,
+      year: formValue.year ?? null,
+      color: formValue.color,
+      vin: formValue.vin,
+      mileage: formValue.mileage ?? null,
+      observations: formValue.observations,
+    });
   }
 
   deleteVehicle(vehicleId: string): void {
-    this.vehiclesSignal.update((vehicles) =>
-      vehicles.filter((vehicle) => vehicle.id !== vehicleId),
+    const currentVehicle = this.findVehicleOwner(vehicleId);
+
+    if (!currentVehicle) {
+      return;
+    }
+
+    this.customersService.deleteVehicleFromCustomer(
+      currentVehicle.customerId,
+      vehicleId,
     );
   }
 
-  private normalizePlate(plateNumber: string): string {
-    return plateNumber.trim().toUpperCase();
+  private findVehicleOwner(
+    vehicleId: string,
+  ): { customerId: string; vehicleId: string } | null {
+    for (const customer of this.customersService.customers()) {
+      const vehicleExists = customer.vehicles.some(
+        (vehicle) => vehicle.id === vehicleId,
+      );
+
+      if (vehicleExists) {
+        return {
+          customerId: customer.id,
+          vehicleId,
+        };
+      }
+    }
+
+    return null;
   }
 }

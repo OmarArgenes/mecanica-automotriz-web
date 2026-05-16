@@ -24,6 +24,25 @@
       class="modal-form"
     >
       <section class="form-section">
+        <h3>Cliente propietario</h3>
+
+        <div class="form-grid">
+          <label class="form-field form-field--full">
+            <span>Cliente *</span>
+            <select formControlName="customerId">
+              <option value="">Selecciona un cliente</option>
+              <option *ngFor="let customer of customers" [value]="customer.id">
+                {{ customer.fullName }} · {{ customer.phone }}
+              </option>
+            </select>
+            <small *ngIf="isInvalid('customerId')">
+              Debes seleccionar el cliente propietario.
+            </small>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
         <h3>Datos del vehículo</h3>
 
         <div class="form-grid">
@@ -35,7 +54,7 @@
               placeholder="Ej. 123ABC"
             />
             <small *ngIf="isInvalid('plateNumber')">
-              La placa del vehículo es obligatoria.
+              La placa es obligatoria.
             </small>
           </label>
 
@@ -46,9 +65,7 @@
               formControlName="brand"
               placeholder="Ej. Toyota"
             />
-            <small *ngIf="isInvalid('brand')">
-              La marca del vehículo es obligatoria.
-            </small>
+            <small *ngIf="isInvalid('brand')"> La marca es obligatoria. </small>
           </label>
 
           <label class="form-field">
@@ -59,7 +76,7 @@
               placeholder="Ej. Corolla"
             />
             <small *ngIf="isInvalid('model')">
-              El modelo del vehículo es obligatorio.
+              El modelo es obligatorio.
             </small>
           </label>
 
@@ -82,57 +99,30 @@
           </label>
 
           <label class="form-field">
+            <span>Kilometraje</span>
+            <input
+              type="number"
+              formControlName="mileage"
+              placeholder="Ej. 85000"
+            />
+          </label>
+
+          <label class="form-field form-field--full">
             <span>VIN / Chasis</span>
             <input
               type="text"
               formControlName="vin"
-              placeholder="Número de chasis o VIN"
+              placeholder="Número de chasis si aplica"
             />
           </label>
-        </div>
-      </section>
 
-      <section class="form-section">
-        <h3>Datos del cliente</h3>
-
-        <div class="form-grid">
-          <label class="form-field">
-            <span>Cliente *</span>
+          <label class="form-field form-field--full">
+            <span>Observaciones</span>
             <input
               type="text"
-              formControlName="customerName"
-              placeholder="Ej. Juan Pérez"
-            />
-            <small *ngIf="isInvalid('customerName')">
-              El nombre del cliente es obligatorio.
-            </small>
-          </label>
-
-          <label class="form-field">
-            <span>Teléfono *</span>
-            <input
-              type="tel"
-              formControlName="customerPhone"
-              placeholder="Ej. 70707070"
-            />
-            <small *ngIf="isInvalid('customerPhone')">
-              El teléfono del cliente es obligatorio.
-            </small>
-          </label>
-        </div>
-      </section>
-
-      <section class="form-section">
-        <h3>Observaciones</h3>
-
-        <div class="form-grid">
-          <label class="form-field form-field--full">
-            <span>Observaciones generales</span>
-            <textarea
-              rows="4"
               formControlName="observations"
-              placeholder="Ej. Vehículo registrado para mantenimiento general."
-            ></textarea>
+              placeholder="Observaciones generales del vehículo"
+            />
           </label>
         </div>
       </section>

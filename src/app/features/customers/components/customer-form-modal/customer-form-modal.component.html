@@ -92,36 +92,119 @@
         </div>
       </section>
 
-      <section class="form-section">
-        <h3>Vehículo relacionado</h3>
+      <section class="form-section vehicle-section">
+        <div class="section-heading">
+          <div>
+            <h3>Vehículos del cliente</h3>
+            <p>Registra uno o varios autos asociados al mismo cliente.</p>
+          </div>
 
-        <div class="form-grid">
-          <label class="form-field">
-            <span>Placa</span>
-            <input
-              type="text"
-              formControlName="vehiclePlateNumber"
-              placeholder="Ej. 123ABC"
-            />
-          </label>
+          <button
+            type="button"
+            class="add-vehicle-button"
+            (click)="addVehicle()"
+          >
+            + Agregar vehículo
+          </button>
+        </div>
 
-          <label class="form-field">
-            <span>Marca</span>
-            <input
-              type="text"
-              formControlName="vehicleBrand"
-              placeholder="Ej. Toyota"
-            />
-          </label>
+        <div formArrayName="vehicles" class="vehicles-form-list">
+          <article
+            class="vehicle-form-card"
+            *ngFor="let vehicleGroup of vehicleFormGroups; let index = index"
+            [formGroupName]="index"
+          >
+            <header class="vehicle-form-header">
+              <div>
+                <strong>Vehículo {{ index + 1 }}</strong>
+                <small>
+                  Completa placa, marca y modelo para identificarlo.
+                </small>
+              </div>
 
-          <label class="form-field">
-            <span>Modelo</span>
-            <input
-              type="text"
-              formControlName="vehicleModel"
-              placeholder="Ej. Corolla"
-            />
-          </label>
+              <button
+                type="button"
+                class="remove-vehicle-button"
+                (click)="removeVehicle(index)"
+              >
+                Quitar
+              </button>
+            </header>
+
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Placa</span>
+                <input
+                  type="text"
+                  formControlName="plateNumber"
+                  placeholder="Ej. 123ABC"
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Marca</span>
+                <input
+                  type="text"
+                  formControlName="brand"
+                  placeholder="Ej. Toyota"
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Modelo</span>
+                <input
+                  type="text"
+                  formControlName="model"
+                  placeholder="Ej. Corolla"
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Año</span>
+                <input
+                  type="number"
+                  formControlName="year"
+                  placeholder="Ej. 2018"
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Color</span>
+                <input
+                  type="text"
+                  formControlName="color"
+                  placeholder="Ej. Blanco"
+                />
+              </label>
+
+              <label class="form-field">
+                <span>Kilometraje</span>
+                <input
+                  type="number"
+                  formControlName="mileage"
+                  placeholder="Ej. 85000"
+                />
+              </label>
+
+              <label class="form-field form-field--full">
+                <span>VIN / Chasis</span>
+                <input
+                  type="text"
+                  formControlName="vin"
+                  placeholder="Número de chasis si aplica"
+                />
+              </label>
+
+              <label class="form-field form-field--full">
+                <span>Observaciones del vehículo</span>
+                <input
+                  type="text"
+                  formControlName="observations"
+                  placeholder="Ej. Vehículo registrado para mantenimiento general"
+                />
+              </label>
+            </div>
+          </article>
         </div>
       </section>
 

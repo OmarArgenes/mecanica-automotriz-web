@@ -10,7 +10,8 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { Vehicle, VehicleFormValue } from '../../models/vehicle.model';
+import { Customer } from '../../../customers/models/customer.model';
+import { VehicleFormValue, VehicleListItem } from '../../models/vehicle.model';
 
 @Component({
   selector: 'app-vehicle-form-modal',
@@ -22,40 +23,39 @@ import { Vehicle, VehicleFormValue } from '../../models/vehicle.model';
 export class VehicleFormModalComponent implements OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() vehicle: Vehicle | null = null;
+  @Input() vehicle: VehicleListItem | null = null;
+  @Input() customers: Customer[] = [];
 
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<VehicleFormValue>();
 
   readonly vehicleForm = this.fb.group({
+    customerId: ['', Validators.required],
     plateNumber: ['', Validators.required],
     brand: ['', Validators.required],
     model: ['', Validators.required],
     year: [null as number | null],
     color: [''],
     vin: [''],
-
-    customerName: ['', Validators.required],
-    customerPhone: ['', Validators.required],
-
+    mileage: [null as number | null],
     observations: [''],
   });
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (!changes['vehicle']) {
+    if (!changes['vehicle'] && !changes['customers']) {
       return;
     }
 
     if (this.vehicle) {
       this.vehicleForm.reset({
+        customerId: this.vehicle.customerId,
         plateNumber: this.vehicle.plateNumber,
         brand: this.vehicle.brand,
         model: this.vehicle.model,
         year: this.vehicle.year ?? null,
         color: this.vehicle.color ?? '',
         vin: this.vehicle.vin ?? '',
-        customerName: this.vehicle.customerName,
-        customerPhone: this.vehicle.customerPhone,
+        mileage: this.vehicle.mileage ?? null,
         observations: this.vehicle.observations ?? '',
       });
 
@@ -63,14 +63,14 @@ export class VehicleFormModalComponent implements OnChanges {
     }
 
     this.vehicleForm.reset({
+      customerId: this.customers[0]?.id ?? '',
       plateNumber: '',
       brand: '',
       model: '',
       year: null,
       color: '',
       vin: '',
-      customerName: '',
-      customerPhone: '',
+      mileage: null,
       observations: '',
     });
   }
@@ -81,8 +81,8 @@ export class VehicleFormModalComponent implements OnChanges {
 
   get modalDescription(): string {
     return this.vehicle
-      ? 'Actualiza los datos principales del vehículo seleccionado.'
-      : 'Registra un vehículo y relaciónalo con su cliente.';
+      ? 'Actualiza los datos principales del vehículo y su cliente relacionado.'
+      : 'Registra un vehículo y asígnalo a un cliente existente.';
   }
 
   submitForm(): void {
@@ -94,14 +94,14 @@ export class VehicleFormModalComponent implements OnChanges {
     const rawValue = this.vehicleForm.getRawValue();
 
     this.saved.emit({
+      customerId: rawValue.customerId ?? '',
       plateNumber: rawValue.plateNumber ?? '',
       brand: rawValue.brand ?? '',
       model: rawValue.model ?? '',
       year: rawValue.year ?? null,
       color: rawValue.color ?? '',
       vin: rawValue.vin ?? '',
-      customerName: rawValue.customerName ?? '',
-      customerPhone: rawValue.customerPhone ?? '',
+      mileage: rawValue.mileage ?? null,
       observations: rawValue.observations ?? '',
     });
   }

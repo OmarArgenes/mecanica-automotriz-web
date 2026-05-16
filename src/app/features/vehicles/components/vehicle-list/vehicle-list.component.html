@@ -11,24 +11,27 @@
     </thead>
 
     <tbody>
-      <tr *ngFor="let vehicle of vehicles">
+      <tr *ngFor="let vehicle of vehicles; trackBy: trackByVehicleId">
         <td data-label="Vehículo">
           <div class="vehicle-main">
             <span class="vehicle-avatar">
-              {{ vehicle.brand.charAt(0) }}
+              {{ vehicle.brand ? vehicle.brand.charAt(0) : "V" }}
             </span>
 
             <div>
-              <strong>{{ vehicle.plateNumber }}</strong>
-              <small>{{ vehicle.brand }} {{ vehicle.model }}</small>
+              <strong>{{ vehicle.plateNumber || "Sin placa" }}</strong>
+              <small>
+                {{ vehicle.brand || "Sin marca" }}
+                {{ vehicle.model || "Sin modelo" }}
+              </small>
             </div>
           </div>
         </td>
 
         <td data-label="Cliente">
           <div class="stacked-info">
-            <strong>{{ vehicle.customerName }}</strong>
-            <small>{{ vehicle.customerPhone }}</small>
+            <strong>{{ vehicle.customerName || "Cliente no asignado" }}</strong>
+            <small>{{ vehicle.customerPhone || "Sin teléfono" }}</small>
           </div>
         </td>
 

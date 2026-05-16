@@ -68,6 +68,7 @@
   <app-vehicle-form-modal
     *ngIf="isFormModalOpen()"
     [vehicle]="vehicleToEdit()"
+    [customers]="customers()"
     (closed)="closeFormModal()"
     (saved)="saveVehicle($event)"
   />

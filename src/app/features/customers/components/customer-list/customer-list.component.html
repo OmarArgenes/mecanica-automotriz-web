@@ -5,7 +5,7 @@
         <th>Cliente</th>
         <th>Contacto</th>
         <th>Documento</th>
-        <th>Vehículo</th>
+        <th>Vehículos</th>
         <th class="actions-column">Acciones</th>
       </tr>
     </thead>
@@ -20,9 +20,9 @@
 
             <div>
               <strong>{{ customer.fullName }}</strong>
-              <small>{{
-                customer.address || "Sin dirección registrada"
-              }}</small>
+              <small>
+                {{ customer.address || "Sin dirección registrada" }}
+              </small>
             </div>
           </div>
         </td>
@@ -40,11 +40,46 @@
           </span>
         </td>
 
-        <td data-label="Vehículo">
-          <span class="vehicle-text">
-            {{ getVehicleLabel(customer) }}
-          </span>
+        <td data-label="Vehículos">
+          <div
+            class="vehicles-stack"
+            *ngIf="customer.vehicles.length; else noVehicles"
+          >
+            <span class="vehicle-count-badge">
+              {{ getVehicleCountLabel(customer) }}
+            </span>
+
+            <div class="vehicle-cards">
+              <article
+                class="vehicle-card"
+                *ngFor="
+                  let vehicle of getVisibleVehicles(customer);
+                  trackBy: trackByVehicleId
+                "
+              >
+                <strong class="vehicle-plate">
+                  {{ vehicle.plateNumber }}
+                </strong>
+
+                <span class="vehicle-description">
+                  {{ getVehicleLabel(vehicle) }}
+                </span>
+              </article>
+
+              <article
+                class="vehicle-card vehicle-card--more"
+                *ngIf="getRemainingVehicleCount(customer) > 0"
+              >
+                +{{ getRemainingVehicleCount(customer) }} más
+              </article>
+            </div>
+          </div>
+
+          <ng-template #noVehicles>
+            <span class="vehicle-empty">Sin vehículos registrados</span>
+          </ng-template>
         </td>
+
         <td data-label="Acciones" class="actions-cell">
           <div class="row-actions">
             <button

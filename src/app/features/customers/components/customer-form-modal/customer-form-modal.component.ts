@@ -8,9 +8,19 @@ import {
   SimpleChanges,
   inject,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 
-import { Customer, CustomerFormValue } from '../../models/customer.model';
+import {
+  Customer,
+  CustomerFormValue,
+  CustomerVehicleFormValue,
+} from '../../models/customer.model';
 
 @Component({
   selector: 'app-customer-form-modal',
@@ -34,10 +44,7 @@ export class CustomerFormModalComponent implements OnChanges {
     whatsapp: [''],
     email: ['', Validators.email],
     address: [''],
-
-    vehiclePlateNumber: [''],
-    vehicleBrand: [''],
-    vehicleModel: [''],
+    vehicles: this.fb.array<FormGroup>([]),
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -45,20 +52,37 @@ export class CustomerFormModalComponent implements OnChanges {
       return;
     }
 
-    if (this.customer) {
-      const firstVehicle = this.customer.vehicles[0];
+    this.vehiclesFormArray.clear();
 
-      this.customerForm.reset({
+    if (this.customer) {
+      this.customerForm.patchValue({
         fullName: this.customer.fullName,
         documentNumber: this.customer.documentNumber,
         phone: this.customer.phone,
         whatsapp: this.customer.whatsapp ?? '',
         email: this.customer.email ?? '',
         address: this.customer.address ?? '',
-        vehiclePlateNumber: firstVehicle?.plateNumber ?? '',
-        vehicleBrand: firstVehicle?.brand ?? '',
-        vehicleModel: firstVehicle?.model ?? '',
       });
+
+      if (this.customer.vehicles.length > 0) {
+        this.customer.vehicles.forEach((vehicle) => {
+          this.vehiclesFormArray.push(
+            this.createVehicleGroup({
+              id: vehicle.id,
+              plateNumber: vehicle.plateNumber,
+              brand: vehicle.brand,
+              model: vehicle.model,
+              year: vehicle.year ?? null,
+              color: vehicle.color ?? '',
+              vin: vehicle.vin ?? '',
+              mileage: vehicle.mileage ?? null,
+              observations: vehicle.observations ?? '',
+            }),
+          );
+        });
+      } else {
+        this.addVehicle();
+      }
 
       return;
     }
@@ -70,11 +94,17 @@ export class CustomerFormModalComponent implements OnChanges {
       whatsapp: '',
       email: '',
       address: '',
-
-      vehiclePlateNumber: '',
-      vehicleBrand: '',
-      vehicleModel: '',
     });
+
+    this.addVehicle();
+  }
+
+  get vehiclesFormArray(): FormArray<FormGroup> {
+    return this.customerForm.get('vehicles') as FormArray<FormGroup>;
+  }
+
+  get vehicleFormGroups(): FormGroup[] {
+    return this.vehiclesFormArray.controls;
   }
 
   get modalTitle(): string {
@@ -83,8 +113,32 @@ export class CustomerFormModalComponent implements OnChanges {
 
   get modalDescription(): string {
     return this.customer
-      ? 'Actualiza los datos principales del cliente seleccionado.'
-      : 'Registra un cliente y, opcionalmente, su primer vehículo relacionado.';
+      ? 'Actualiza los datos del cliente y administra sus vehículos registrados.'
+      : 'Registra un cliente y uno o varios vehículos relacionados.';
+  }
+
+  addVehicle(): void {
+    this.vehiclesFormArray.push(this.createVehicleGroup());
+  }
+
+  removeVehicle(index: number): void {
+    if (this.vehiclesFormArray.length === 1) {
+      this.vehiclesFormArray.at(0).reset({
+        id: '',
+        plateNumber: '',
+        brand: '',
+        model: '',
+        year: null,
+        color: '',
+        vin: '',
+        mileage: null,
+        observations: '',
+      });
+
+      return;
+    }
+
+    this.vehiclesFormArray.removeAt(index);
   }
 
   submitForm(): void {
@@ -102,9 +156,7 @@ export class CustomerFormModalComponent implements OnChanges {
       whatsapp: rawValue.whatsapp ?? '',
       email: rawValue.email ?? '',
       address: rawValue.address ?? '',
-      vehiclePlateNumber: rawValue.vehiclePlateNumber ?? '',
-      vehicleBrand: rawValue.vehicleBrand ?? '',
-      vehicleModel: rawValue.vehicleModel ?? '',
+      vehicles: this.buildVehiclesFormValue(),
     });
   }
 
@@ -115,5 +167,54 @@ export class CustomerFormModalComponent implements OnChanges {
   isInvalid(controlName: string): boolean {
     const control = this.customerForm.get(controlName);
     return !!control && control.invalid && (control.dirty || control.touched);
+  }
+
+  isVehicleFieldInvalid(index: number, controlName: string): boolean {
+    const control = this.vehiclesFormArray.at(index).get(controlName);
+    return !!control && control.invalid && (control.dirty || control.touched);
+  }
+
+  private createVehicleGroup(vehicle?: CustomerVehicleFormValue): FormGroup {
+    return this.fb.group({
+      id: [vehicle?.id ?? ''],
+      plateNumber: [vehicle?.plateNumber ?? ''],
+      brand: [vehicle?.brand ?? ''],
+      model: [vehicle?.model ?? ''],
+      year: [vehicle?.year ?? null],
+      color: [vehicle?.color ?? ''],
+      vin: [vehicle?.vin ?? ''],
+      mileage: [vehicle?.mileage ?? null],
+      observations: [vehicle?.observations ?? ''],
+    });
+  }
+
+  private buildVehiclesFormValue(): CustomerVehicleFormValue[] {
+    return this.vehiclesFormArray.controls
+      .map((vehicleGroup) => {
+        const rawValue = vehicleGroup.getRawValue();
+
+        return {
+          id: rawValue.id || undefined,
+          plateNumber: String(rawValue.plateNumber ?? '').trim(),
+          brand: String(rawValue.brand ?? '').trim(),
+          model: String(rawValue.model ?? '').trim(),
+          year: rawValue.year ? Number(rawValue.year) : null,
+          color: String(rawValue.color ?? '').trim(),
+          vin: String(rawValue.vin ?? '').trim(),
+          mileage: rawValue.mileage ? Number(rawValue.mileage) : null,
+          observations: String(rawValue.observations ?? '').trim(),
+        };
+      })
+      .filter(
+        (vehicle) =>
+          vehicle.plateNumber ||
+          vehicle.brand ||
+          vehicle.model ||
+          vehicle.year ||
+          vehicle.color ||
+          vehicle.vin ||
+          vehicle.mileage ||
+          vehicle.observations,
+      );
   }
 }

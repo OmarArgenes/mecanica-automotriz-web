@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { Vehicle } from '../../models/vehicle.model';
+import { VehicleListItem } from '../../models/vehicle.model';
 
 @Component({
   selector: 'app-vehicle-list',
@@ -11,31 +11,29 @@ import { Vehicle } from '../../models/vehicle.model';
   styleUrl: './vehicle-list.component.scss',
 })
 export class VehicleListComponent {
-  @Input({ required: true }) vehicles: Vehicle[] = [];
+  @Input({ required: true }) vehicles: VehicleListItem[] = [];
 
-  @Output() editRequested = new EventEmitter<Vehicle>();
-  @Output() deleteRequested = new EventEmitter<Vehicle>();
+  @Output() editRequested = new EventEmitter<VehicleListItem>();
+  @Output() deleteRequested = new EventEmitter<VehicleListItem>();
 
-  getVehicleLabel(vehicle: Vehicle): string {
-    return `${vehicle.brand} ${vehicle.model}`;
+  getYearColorLabel(vehicle: VehicleListItem): string {
+    const details = [
+      vehicle.year ? String(vehicle.year) : '',
+      vehicle.color?.trim() ?? '',
+    ].filter(Boolean);
+
+    return details.length ? details.join(' · ') : 'Sin año/color registrado';
   }
 
-  getYearColorLabel(vehicle: Vehicle): string {
-    const year = vehicle.year ? String(vehicle.year) : 'Sin año';
-    const color = vehicle.color?.trim() || 'Sin color';
-
-    return `${year} · ${color}`;
-  }
-
-  getVinLabel(vehicle: Vehicle): string {
-    return vehicle.vin?.trim() || 'Sin VIN registrado';
-  }
-
-  requestEdit(vehicle: Vehicle): void {
+  requestEdit(vehicle: VehicleListItem): void {
     this.editRequested.emit(vehicle);
   }
 
-  requestDelete(vehicle: Vehicle): void {
+  requestDelete(vehicle: VehicleListItem): void {
     this.deleteRequested.emit(vehicle);
+  }
+
+  trackByVehicleId(_: number, vehicle: VehicleListItem): string {
+    return vehicle.id;
   }
 }
