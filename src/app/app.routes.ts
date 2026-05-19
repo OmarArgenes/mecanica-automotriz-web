@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './core/layouts/main-layout/main-layout.component';
+import { authGuard } from './core/auth/auth.guard';
 
 const placeholder = () =>
   import('./shared/components/placeholder-page/placeholder-page.component').then(
@@ -8,8 +9,16 @@ const placeholder = () =>
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/pages/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
+  },
+  {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
