@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
+import { supabase } from '../../../core/supabase/supabase.client';
 import {
   Customer,
   CustomerFormValue,
@@ -7,263 +8,377 @@ import {
   CustomerVehicleSummary,
 } from '../models/customer.model';
 
+interface SupabaseVehicleRow {
+  id: string;
+  plate_number: string;
+  brand: string;
+  model: string;
+  year: number | null;
+  color: string | null;
+  vin: string | null;
+  mileage: number | null;
+  observations: string | null;
+}
+
+interface SupabaseCustomerRow {
+  id: string;
+  full_name: string;
+  document_number: string | null;
+  phone: string;
+  whatsapp: string | null;
+  email: string | null;
+  address: string | null;
+  created_at: string;
+  vehicles?: SupabaseVehicleRow[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class CustomersService {
-  private readonly customersSignal = signal<Customer[]>([
-    {
-      id: '1',
-      fullName: 'Juan Pérez',
-      documentNumber: '7845123',
-      phone: '70707070',
-      whatsapp: '70707070',
-      email: 'juan.perez@email.com',
-      address: 'Av. Blanco Galindo, Cochabamba',
-      registeredAt: '2026-05-12',
-      vehicles: [
-        {
-          id: 'v1',
-          plateNumber: '123ABC',
-          brand: 'Toyota',
-          model: 'Corolla',
-          year: 2018,
-          color: 'Blanco',
-          mileage: 85000,
-          observations: 'Vehículo registrado para mantenimiento general.',
-        },
-        {
-          id: 'v2',
-          plateNumber: '456DEF',
-          brand: 'Suzuki',
-          model: 'Vitara',
-          year: 2020,
-          color: 'Negro',
-          mileage: 52000,
-          observations: 'Segundo vehículo registrado para el mismo cliente.',
-        },
-      ],
-    },
-    {
-      id: '2',
-      fullName: 'María López',
-      documentNumber: '6589741',
-      phone: '76451230',
-      whatsapp: '76451230',
-      email: 'maria.lopez@email.com',
-      address: 'Zona Cala Cala, Cochabamba',
-      registeredAt: '2026-05-12',
-      vehicles: [
-        {
-          id: 'v3',
-          plateNumber: '789XYZ',
-          brand: 'Nissan',
-          model: 'March',
-          year: 2020,
-          color: 'Gris',
-          mileage: 43000,
-          observations: 'Cliente reportó vibración al frenar.',
-        },
-      ],
-    },
-    {
-      id: '3',
-      fullName: 'Carlos Rojas',
-      documentNumber: '5124789',
-      phone: '72223344',
-      whatsapp: '72223344',
-      address: 'Quillacollo, Cochabamba',
-      registeredAt: '2026-05-10',
-      vehicles: [
-        {
-          id: 'v4',
-          plateNumber: '321GHT',
-          brand: 'Ford',
-          model: 'Ranger',
-          year: 2019,
-          color: 'Negro',
-          mileage: 99000,
-          observations: 'Camioneta registrada para control preventivo.',
-        },
-      ],
-    },
-  ]);
+  private readonly customersSignal = signal<Customer[]>([]);
+  private readonly loadingSignal = signal(false);
+  private readonly errorSignal = signal<string | null>(null);
 
   readonly customers = this.customersSignal.asReadonly();
+  readonly loading = this.loadingSignal.asReadonly();
+  readonly error = this.errorSignal.asReadonly();
 
-  createCustomer(formValue: CustomerFormValue): void {
-    const newCustomer: Customer = {
-      id: crypto.randomUUID(),
-      fullName: formValue.fullName.trim(),
-      documentNumber: formValue.documentNumber.trim(),
-      phone: formValue.phone.trim(),
-      whatsapp: formValue.whatsapp?.trim(),
-      email: formValue.email?.trim(),
-      address: formValue.address?.trim(),
-      registeredAt: this.getTodayDate(),
-      vehicles: this.buildVehicleSummaries(formValue),
-    };
-
-    this.customersSignal.update((customers) => [newCustomer, ...customers]);
+  constructor() {
+    void this.loadCustomers();
   }
 
-  updateCustomer(customerId: string, formValue: CustomerFormValue): void {
-    this.customersSignal.update((customers) =>
-      customers.map((customer) =>
-        customer.id === customerId
-          ? {
-              ...customer,
-              fullName: formValue.fullName.trim(),
-              documentNumber: formValue.documentNumber.trim(),
-              phone: formValue.phone.trim(),
-              whatsapp: formValue.whatsapp?.trim(),
-              email: formValue.email?.trim(),
-              address: formValue.address?.trim(),
-              vehicles: this.buildVehicleSummaries(
-                formValue,
-                customer.vehicles,
-              ),
-            }
-          : customer,
+  async loadCustomers(): Promise<void> {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    const { data, error } = await supabase
+      .from('customers')
+      .select(
+        `
+        id,
+        full_name,
+        document_number,
+        phone,
+        whatsapp,
+        email,
+        address,
+        created_at,
+        vehicles (
+          id,
+          plate_number,
+          brand,
+          model,
+          year,
+          color,
+          vin,
+          mileage,
+          observations
+        )
+      `,
+      )
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      this.loadingSignal.set(false);
+      this.errorSignal.set(error.message);
+      throw new Error(error.message);
+    }
+
+    this.customersSignal.set(
+      ((data ?? []) as SupabaseCustomerRow[]).map((customer) =>
+        this.mapCustomerFromDatabase(customer),
       ),
     );
+
+    this.loadingSignal.set(false);
   }
 
-  deleteCustomer(customerId: string): void {
-    this.customersSignal.update((customers) =>
-      customers.filter((customer) => customer.id !== customerId),
+  async createCustomer(formValue: CustomerFormValue): Promise<void> {
+    const { data: customer, error: customerError } = await supabase
+      .from('customers')
+      .insert({
+        full_name: formValue.fullName.trim(),
+        document_number: this.trimToNull(formValue.documentNumber),
+        phone: formValue.phone.trim(),
+        whatsapp: this.trimToNull(formValue.whatsapp),
+        email: this.trimToNull(formValue.email),
+        address: this.trimToNull(formValue.address),
+      })
+      .select('id')
+      .single();
+
+    if (customerError) {
+      throw new Error(customerError.message);
+    }
+
+    const vehicleRows = this.buildVehicleRows(
+      customer.id,
+      formValue.vehicles ?? [],
     );
+
+    if (vehicleRows.length > 0) {
+      const { error: vehiclesError } = await supabase
+        .from('vehicles')
+        .insert(vehicleRows);
+
+      if (vehiclesError) {
+        throw new Error(vehiclesError.message);
+      }
+    }
+
+    await this.loadCustomers();
   }
 
-  addVehicleToCustomer(
+  async updateCustomer(
+    customerId: string,
+    formValue: CustomerFormValue,
+  ): Promise<void> {
+    const { error: customerError } = await supabase
+      .from('customers')
+      .update({
+        full_name: formValue.fullName.trim(),
+        document_number: this.trimToNull(formValue.documentNumber),
+        phone: formValue.phone.trim(),
+        whatsapp: this.trimToNull(formValue.whatsapp),
+        email: this.trimToNull(formValue.email),
+        address: this.trimToNull(formValue.address),
+      })
+      .eq('id', customerId);
+
+    if (customerError) {
+      throw new Error(customerError.message);
+    }
+
+    await this.syncCustomerVehicles(customerId, formValue.vehicles ?? []);
+    await this.loadCustomers();
+  }
+
+  async deleteCustomer(customerId: string): Promise<void> {
+    const { error } = await supabase
+      .from('customers')
+      .delete()
+      .eq('id', customerId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await this.loadCustomers();
+  }
+
+  async addVehicleToCustomer(
     customerId: string,
     vehicleValue: CustomerVehicleFormValue,
-  ): void {
-    const newVehicle = this.buildVehicleSummary(vehicleValue);
+  ): Promise<void> {
+    const vehicleRows = this.buildVehicleRows(customerId, [vehicleValue]);
 
-    this.customersSignal.update((customers) =>
-      customers.map((customer) =>
-        customer.id === customerId
-          ? {
-              ...customer,
-              vehicles: [...customer.vehicles, newVehicle],
-            }
-          : customer,
-      ),
-    );
+    if (vehicleRows.length === 0) {
+      return;
+    }
+
+    const { error } = await supabase.from('vehicles').insert(vehicleRows);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await this.loadCustomers();
   }
 
-  updateVehicleForCustomer(
+  async updateVehicleForCustomer(
     customerId: string,
     vehicleId: string,
     vehicleValue: CustomerVehicleFormValue,
-  ): void {
-    this.customersSignal.update((customers) =>
-      customers.map((customer) =>
-        customer.id === customerId
-          ? {
-              ...customer,
-              vehicles: customer.vehicles.map((vehicle) =>
-                vehicle.id === vehicleId
-                  ? this.buildVehicleSummary({
-                      ...vehicleValue,
-                      id: vehicleId,
-                    })
-                  : vehicle,
-              ),
-            }
-          : customer,
-      ),
-    );
-  }
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('vehicles')
+      .update(this.buildVehicleUpdateRow(vehicleValue))
+      .eq('id', vehicleId)
+      .eq('customer_id', customerId);
 
-  deleteVehicleFromCustomer(customerId: string, vehicleId: string): void {
-    this.customersSignal.update((customers) =>
-      customers.map((customer) =>
-        customer.id === customerId
-          ? {
-              ...customer,
-              vehicles: customer.vehicles.filter(
-                (vehicle) => vehicle.id !== vehicleId,
-              ),
-            }
-          : customer,
-      ),
-    );
-  }
-
-  private buildVehicleSummaries(
-    formValue: CustomerFormValue,
-    currentVehicles: CustomerVehicleSummary[] = [],
-  ): CustomerVehicleSummary[] {
-    if (formValue.vehicles?.length) {
-      return formValue.vehicles
-        .map((vehicle, index) =>
-          this.buildVehicleSummary(vehicle, currentVehicles[index]),
-        )
-        .filter(
-          (vehicle) =>
-            vehicle.plateNumber !== 'Sin placa' ||
-            vehicle.brand !== 'Sin marca' ||
-            vehicle.model !== 'Sin modelo',
-        );
+    if (error) {
+      throw new Error(error.message);
     }
 
-    const legacyVehicle = this.buildLegacyVehicleFromCurrentForm(
-      formValue,
-      currentVehicles,
-    );
-
-    return legacyVehicle ? [legacyVehicle] : currentVehicles;
+    await this.loadCustomers();
   }
 
-  private buildLegacyVehicleFromCurrentForm(
-    formValue: CustomerFormValue,
-    currentVehicles: CustomerVehicleSummary[],
-  ): CustomerVehicleSummary | null {
-    const plateNumber = formValue.vehiclePlateNumber?.trim();
-    const brand = formValue.vehicleBrand?.trim();
-    const model = formValue.vehicleModel?.trim();
+  async deleteVehicleFromCustomer(
+    customerId: string,
+    vehicleId: string,
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('vehicles')
+      .delete()
+      .eq('id', vehicleId)
+      .eq('customer_id', customerId);
 
-    if (!plateNumber && !brand && !model) {
-      return currentVehicles[0] ?? null;
+    if (error) {
+      throw new Error(error.message);
     }
 
+    await this.loadCustomers();
+  }
+
+  private async syncCustomerVehicles(
+    customerId: string,
+    vehicles: CustomerVehicleFormValue[],
+  ): Promise<void> {
+    const currentCustomer = this.customersSignal().find(
+      (customer) => customer.id === customerId,
+    );
+
+    const currentVehicleIds = new Set(
+      currentCustomer?.vehicles.map((vehicle) => vehicle.id) ?? [],
+    );
+
+    const incomingVehicleIds = new Set(
+      vehicles
+        .map((vehicle) => vehicle.id)
+        .filter((vehicleId): vehicleId is string => !!vehicleId),
+    );
+
+    const removedVehicleIds = [...currentVehicleIds].filter(
+      (vehicleId) => !incomingVehicleIds.has(vehicleId),
+    );
+
+    for (const vehicle of vehicles) {
+      const hasUsefulData = this.hasVehicleData(vehicle);
+
+      if (!hasUsefulData) {
+        continue;
+      }
+
+      if (vehicle.id && currentVehicleIds.has(vehicle.id)) {
+        const { error } = await supabase
+          .from('vehicles')
+          .update(this.buildVehicleUpdateRow(vehicle))
+          .eq('id', vehicle.id)
+          .eq('customer_id', customerId);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        continue;
+      }
+
+      const rows = this.buildVehicleRows(customerId, [vehicle]);
+
+      if (rows.length > 0) {
+        const { error } = await supabase.from('vehicles').insert(rows);
+
+        if (error) {
+          throw new Error(error.message);
+        }
+      }
+    }
+
+    if (removedVehicleIds.length > 0) {
+      const { error } = await supabase
+        .from('vehicles')
+        .delete()
+        .eq('customer_id', customerId)
+        .in('id', removedVehicleIds);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+    }
+  }
+
+  private buildVehicleRows(
+    customerId: string,
+    vehicles: CustomerVehicleFormValue[],
+  ) {
+    return vehicles
+      .filter((vehicle) => this.hasVehicleData(vehicle))
+      .map((vehicle) => ({
+        customer_id: customerId,
+        plate_number: this.normalizePlate(vehicle.plateNumber),
+        brand: vehicle.brand?.trim() || 'Sin marca',
+        model: vehicle.model?.trim() || 'Sin modelo',
+        year: vehicle.year ?? null,
+        color: this.trimToNull(vehicle.color),
+        vin: this.trimToNull(vehicle.vin),
+        mileage: vehicle.mileage ?? null,
+        observations: this.trimToNull(vehicle.observations),
+      }));
+  }
+
+  private buildVehicleUpdateRow(vehicle: CustomerVehicleFormValue) {
     return {
-      id: currentVehicles[0]?.id ?? crypto.randomUUID(),
-      plateNumber: this.normalizePlate(plateNumber || 'Sin placa'),
-      brand: brand || 'Sin marca',
-      model: model || 'Sin modelo',
-      year: currentVehicles[0]?.year ?? null,
-      color: currentVehicles[0]?.color ?? '',
-      vin: currentVehicles[0]?.vin ?? '',
-      mileage: currentVehicles[0]?.mileage ?? null,
-      observations: currentVehicles[0]?.observations ?? '',
+      plate_number: this.normalizePlate(vehicle.plateNumber),
+      brand: vehicle.brand?.trim() || 'Sin marca',
+      model: vehicle.model?.trim() || 'Sin modelo',
+      year: vehicle.year ?? null,
+      color: this.trimToNull(vehicle.color),
+      vin: this.trimToNull(vehicle.vin),
+      mileage: vehicle.mileage ?? null,
+      observations: this.trimToNull(vehicle.observations),
     };
   }
 
-  private buildVehicleSummary(
-    vehicleValue: CustomerVehicleFormValue,
-    currentVehicle?: CustomerVehicleSummary,
+  private mapCustomerFromDatabase(customer: SupabaseCustomerRow): Customer {
+    return {
+      id: customer.id,
+      fullName: customer.full_name,
+      documentNumber: customer.document_number ?? '',
+      phone: customer.phone,
+      whatsapp: customer.whatsapp ?? '',
+      email: customer.email ?? '',
+      address: customer.address ?? '',
+      registeredAt: this.formatDate(customer.created_at),
+      vehicles: (customer.vehicles ?? [])
+        .map((vehicle) => this.mapVehicleFromDatabase(vehicle))
+        .sort((a, b) => a.plateNumber.localeCompare(b.plateNumber)),
+    };
+  }
+
+  private mapVehicleFromDatabase(
+    vehicle: SupabaseVehicleRow,
   ): CustomerVehicleSummary {
     return {
-      id: vehicleValue.id ?? currentVehicle?.id ?? crypto.randomUUID(),
-      plateNumber: this.normalizePlate(vehicleValue.plateNumber || 'Sin placa'),
-      brand: vehicleValue.brand?.trim() || 'Sin marca',
-      model: vehicleValue.model?.trim() || 'Sin modelo',
-      year: vehicleValue.year ?? currentVehicle?.year ?? null,
-      color: vehicleValue.color?.trim() || '',
-      vin: vehicleValue.vin?.trim() || '',
-      mileage: vehicleValue.mileage ?? currentVehicle?.mileage ?? null,
-      observations: vehicleValue.observations?.trim() || '',
+      id: vehicle.id,
+      plateNumber: vehicle.plate_number,
+      brand: vehicle.brand,
+      model: vehicle.model,
+      year: vehicle.year,
+      color: vehicle.color ?? '',
+      vin: vehicle.vin ?? '',
+      mileage: vehicle.mileage,
+      observations: vehicle.observations ?? '',
     };
   }
 
-  private normalizePlate(plateNumber: string): string {
-    return plateNumber.trim().toUpperCase();
+  private hasVehicleData(vehicle: CustomerVehicleFormValue): boolean {
+    return [
+      vehicle.plateNumber,
+      vehicle.brand,
+      vehicle.model,
+      vehicle.color,
+      vehicle.vin,
+      vehicle.observations,
+    ].some((value) => String(value ?? '').trim().length > 0);
   }
 
-  private getTodayDate(): string {
-    return new Date().toISOString().split('T')[0];
+  private normalizePlate(plateNumber?: string): string {
+    const value = plateNumber?.trim().toUpperCase();
+
+    if (value) {
+      return value;
+    }
+
+    return `SIN-PLACA-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+  }
+
+  private trimToNull(value?: string | null): string | null {
+    const trimmed = value?.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  private formatDate(value: string): string {
+    return value.split('T')[0];
   }
 }

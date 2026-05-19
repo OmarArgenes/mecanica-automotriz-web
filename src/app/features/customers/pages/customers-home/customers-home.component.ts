@@ -93,19 +93,26 @@ export class CustomersHomeComponent {
     this.customerToEdit.set(null);
   }
 
-  saveCustomer(formValue: CustomerFormValue): void {
+  async saveCustomer(formValue: CustomerFormValue): Promise<void> {
     const customer = this.customerToEdit();
 
-    if (customer) {
-      this.customersService.updateCustomer(customer.id, formValue);
-    } else {
-      this.customersService.createCustomer(formValue);
-    }
+    try {
+      if (customer) {
+        await this.customersService.updateCustomer(customer.id, formValue);
+      } else {
+        await this.customersService.createCustomer(formValue);
+      }
 
-    this.closeFormModal();
+      this.closeFormModal();
+    } catch (error) {
+      console.error(error);
+      window.alert(
+        'No se pudo guardar el cliente. Revisa los datos e intenta nuevamente.',
+      );
+    }
   }
 
-  deleteCustomer(customer: Customer): void {
+  async deleteCustomer(customer: Customer): Promise<void> {
     const confirmed = window.confirm(
       `¿Seguro que deseas eliminar al cliente ${customer.fullName}?`,
     );
@@ -114,6 +121,13 @@ export class CustomersHomeComponent {
       return;
     }
 
-    this.customersService.deleteCustomer(customer.id);
+    try {
+      await this.customersService.deleteCustomer(customer.id);
+    } catch (error) {
+      console.error(error);
+      window.alert(
+        'No se pudo eliminar el cliente. Puede tener vehículos u órdenes relacionadas.',
+      );
+    }
   }
 }
