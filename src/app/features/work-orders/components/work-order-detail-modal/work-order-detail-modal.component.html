@@ -69,26 +69,9 @@
           <strong>{{ order.mechanicName }}</strong>
         </article>
 
-        <article class="info-card info-card--amount">
-          <span>Total</span>
-
-          <ng-container *ngIf="isPending; else readonlyTotal">
-            <div class="amount-input-wrapper">
-              <span class="currency-label">Bs</span>
-
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                [(ngModel)]="editableTotalAmount"
-                class="amount-input"
-              />
-            </div>
-          </ng-container>
-
-          <ng-template #readonlyTotal>
-            <strong>Bs {{ order.totalAmount }}</strong>
-          </ng-template>
+        <article class="info-card info-card--amount" *ngIf="!isPending">
+          <span>Total final</span>
+          <strong>Bs {{ order.totalAmount }}</strong>
         </article>
       </section>
 
@@ -97,21 +80,126 @@
         <p>{{ order.problemDescription }}</p>
       </section>
 
-      <section class="description-panel">
-        <span>Trabajo realizado / solicitado</span>
+      <section class="charge-panel">
+        <header class="charge-header">
+          <div>
+            <span>Detalle de cobro final</span>
+            <h3>Servicios, trabajos o repuestos cobrados</h3>
+          </div>
 
-        <ng-container *ngIf="isPending; else readonlyWorkDescription">
-          <textarea
-            [(ngModel)]="editableWorkDescription"
-            class="work-description-input"
-            rows="5"
-            placeholder="Describe aquí el trabajo realizado, repuestos utilizados, observaciones y resultado final..."
-          ></textarea>
-        </ng-container>
+          <strong>Bs {{ chargeTotal }}</strong>
+        </header>
 
-        <ng-template #readonlyWorkDescription>
-          <p>{{ order.workDescription }}</p>
+        <form
+          *ngIf="isPending"
+          class="charge-form"
+          (ngSubmit)="addOrUpdateChargeItem()"
+        >
+          <div class="charge-form-group charge-form-group--description">
+            <label for="chargeDescription">Detalle</label>
+            <input
+              id="chargeDescription"
+              name="chargeDescription"
+              type="text"
+              [(ngModel)]="chargeDescription"
+              placeholder="Ej. Cambio de bujía y presionar Enter..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="charge-form-group">
+            <label for="chargeQuantity">Cantidad</label>
+            <input
+              id="chargeQuantity"
+              name="chargeQuantity"
+              type="number"
+              min="1"
+              step="1"
+              [(ngModel)]="chargeQuantity"
+            />
+          </div>
+
+          <div class="charge-form-group">
+            <label for="chargeAmount">Monto Bs</label>
+            <input
+              id="chargeAmount"
+              name="chargeAmount"
+              type="number"
+              min="0"
+              step="0.01"
+              [(ngModel)]="chargeAmount"
+              placeholder="0"
+            />
+          </div>
+
+          <button type="submit" class="charge-add-button">
+            {{ isEditingChargeItem ? "Actualizar" : "Agregar" }}
+          </button>
+
+          <button
+            *ngIf="isEditingChargeItem"
+            type="button"
+            class="charge-cancel-button"
+            (click)="cancelChargeEdit()"
+          >
+            Cancelar
+          </button>
+        </form>
+
+        <ol
+          class="charge-list"
+          *ngIf="chargeItems.length > 0; else emptyCharges"
+        >
+          <li
+            *ngFor="
+              let item of chargeItems;
+              let index = index;
+              trackBy: trackByChargeItemId
+            "
+          >
+            <div class="charge-item-main">
+              <span class="charge-item-number">{{ index + 1 }}.</span>
+
+              <div>
+                <strong>{{ item.description }}</strong>
+                <span>
+                  Cantidad: {{ item.quantity }} · Monto: Bs {{ item.amount }}
+                </span>
+              </div>
+            </div>
+
+            <strong class="charge-item-subtotal">Bs {{ item.subtotal }}</strong>
+
+            <div class="charge-item-actions" *ngIf="isPending">
+              <button type="button" (click)="editChargeItem(item)">
+                Editar
+              </button>
+
+              <button
+                type="button"
+                class="danger"
+                (click)="deleteChargeItem(item.id)"
+              >
+                Eliminar
+              </button>
+            </div>
+          </li>
+        </ol>
+
+        <ng-template #emptyCharges>
+          <div class="empty-charges">
+            <strong>No agregaste cobros todavía</strong>
+            <span>
+              Escribe el detalle, deja la cantidad en 1 o cámbiala, coloca el
+              monto y presiona Enter.
+            </span>
+          </div>
         </ng-template>
+
+        <footer class="charge-total">
+          <span>Total final</span>
+          <strong>Bs {{ chargeTotal }}</strong>
+        </footer>
       </section>
     </div>
 

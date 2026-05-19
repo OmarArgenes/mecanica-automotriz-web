@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './core/layouts/main-layout/main-layout.component';
+import { authGuard } from './core/auth/auth.guard';
 
 const placeholder = () =>
   import('./shared/components/placeholder-page/placeholder-page.component').then(
@@ -8,8 +9,16 @@ const placeholder = () =>
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/pages/login/login.component').then(
+        (m) => m.LoginComponent,
+      ),
+  },
+  {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -25,12 +34,8 @@ export const routes: Routes = [
       },
       {
         path: 'vehicle-intake',
-        loadComponent: placeholder,
-        data: {
-          title: 'Recepción de vehículos',
-          description:
-            'Registra los vehículos que ingresan al taller, su condición inicial y genera constancias para el cliente.',
-        },
+        pathMatch: 'full',
+        redirectTo: 'vehicle-intake/new',
       },
       {
         path: 'vehicle-intake/new',
@@ -60,21 +65,17 @@ export const routes: Routes = [
       },
       {
         path: 'customers',
-        loadComponent: placeholder,
-        data: {
-          title: 'Clientes',
-          description:
-            'Administra los datos de clientes, teléfonos, WhatsApp, dirección e historial relacionado.',
-        },
+        loadComponent: () =>
+          import('./features/customers/pages/customers-home/customers-home.component').then(
+            (m) => m.CustomersHomeComponent,
+          ),
       },
       {
         path: 'vehicles',
-        loadComponent: placeholder,
-        data: {
-          title: 'Vehículos',
-          description:
-            'Consulta y administra vehículos por placa, cliente, marca, modelo e historial de servicios.',
-        },
+        loadComponent: () =>
+          import('./features/vehicles/pages/vehicles-home/vehicles-home.component').then(
+            (m) => m.VehiclesHomeComponent,
+          ),
       },
       {
         path: 'reports',

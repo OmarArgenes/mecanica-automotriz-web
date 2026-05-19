@@ -1,0 +1,79 @@
+<div class="vehicles-table-wrapper" *ngIf="vehicles.length; else emptyState">
+  <table class="vehicles-table">
+    <thead>
+      <tr>
+        <th>Vehículo</th>
+        <th>Cliente</th>
+        <th>Año / Color</th>
+        <th>Observaciones</th>
+        <th class="actions-column">Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let vehicle of vehicles; trackBy: trackByVehicleId">
+        <td data-label="Vehículo">
+          <div class="vehicle-main">
+            <span class="vehicle-avatar">
+              {{ vehicle.brand ? vehicle.brand.charAt(0) : "V" }}
+            </span>
+
+            <div>
+              <strong>{{ vehicle.plateNumber || "Sin placa" }}</strong>
+              <small>
+                {{ vehicle.brand || "Sin marca" }}
+                {{ vehicle.model || "Sin modelo" }}
+              </small>
+            </div>
+          </div>
+        </td>
+
+        <td data-label="Cliente">
+          <div class="stacked-info">
+            <strong>{{ vehicle.customerName || "Cliente no asignado" }}</strong>
+            <small>{{ vehicle.customerPhone || "Sin teléfono" }}</small>
+          </div>
+        </td>
+
+        <td data-label="Año / Color">
+          <span class="soft-badge">
+            {{ getYearColorLabel(vehicle) }}
+          </span>
+        </td>
+
+        <td data-label="Observaciones">
+          <span class="observations-text">
+            {{ vehicle.observations || "Sin observaciones registradas" }}
+          </span>
+        </td>
+
+        <td data-label="Acciones" class="actions-cell">
+          <div class="row-actions">
+            <button
+              type="button"
+              class="action-button action-button--edit"
+              (click)="requestEdit(vehicle)"
+            >
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="action-button action-button--delete"
+              (click)="requestDelete(vehicle)"
+            >
+              Eliminar
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #emptyState>
+  <div class="empty-state">
+    <strong>No se encontraron vehículos</strong>
+    <p>Prueba con otro término de búsqueda o registra un nuevo vehículo.</p>
+  </div>
+</ng-template>

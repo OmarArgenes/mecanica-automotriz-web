@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 interface MenuItem {
@@ -23,6 +23,7 @@ interface MenuGroup {
 })
 export class SidebarComponent {
   logoMissing = false;
+  isMobileMenuOpen = false;
 
   menuGroups: MenuGroup[] = [
     {
@@ -40,7 +41,7 @@ export class SidebarComponent {
       items: [
         {
           label: 'Recepción',
-          route: '/vehicle-intake',
+          route: '/vehicle-intake/new',
           icon: 'R',
           highlight: true,
         },
@@ -71,20 +72,33 @@ export class SidebarComponent {
         },
       ],
     },
-    {
-      title: 'Control',
-      items: [
-        {
-          label: 'Reportes',
-          route: '/reports',
-          icon: 'I',
-        },
-        {
-          label: 'Configuración',
-          route: '/settings',
-          icon: 'S',
-        },
-      ],
-    },
+    // {
+    //   title: 'Control',
+    //   items: [
+    //     {
+    //       label: 'Reportes',
+    //       route: '/reports',
+    //       icon: 'I',
+    //     },
+    //     {
+    //       label: 'Configuración',
+    //       route: '/settings',
+    //       icon: 'S',
+    //     },
+    //   ],
+    // },
   ];
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  closeMenuWithEscape(): void {
+    this.closeMobileMenu();
+  }
 }

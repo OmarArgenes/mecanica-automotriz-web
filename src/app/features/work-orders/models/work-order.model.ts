@@ -1,5 +1,13 @@
 export type WorkOrderStatus = 'pending' | 'completed';
 
+export interface WorkOrderChargeItem {
+  id: string;
+  description: string;
+  quantity: number;
+  amount: number;
+  subtotal: number;
+}
+
 export interface WorkOrder {
   id: string;
   orderNumber: string;
@@ -18,6 +26,8 @@ export interface WorkOrder {
   problemDescription: string;
   workDescription: string;
 
+  chargeItems: WorkOrderChargeItem[];
   totalAmount: number;
+
   status: WorkOrderStatus;
 }

@@ -11,29 +11,25 @@ import { QuickActionsComponent } from '../../../../shared/components/quick-actio
   styleUrl: './dashboard-home.component.scss',
 })
 export class DashboardHomeComponent {
+  searchTerm = '';
+
   stats = [
     {
-      label: 'Vehículos en taller',
-      value: '08',
-      detail: 'Actualmente registrados',
-      tone: 'blue',
-    },
-    {
-      label: 'Órdenes pendientes',
-      value: '05',
-      detail: 'Requieren seguimiento',
-      tone: 'orange',
-    },
-    {
-      label: 'En reparación',
+      label: 'Vehículos en reparación',
       value: '03',
-      detail: 'Trabajos activos',
+      detail: 'Trabajos actualmente activos',
       tone: 'blue',
+    },
+    {
+      label: 'Vehículos entregados',
+      value: '05',
+      detail: 'Trabajos finalizados y entregados',
+      tone: 'green',
     },
     {
       label: 'Esperando repuestos',
       value: '02',
-      detail: 'Pendientes de aprobación',
+      detail: 'Pendientes de aprobación o compra',
       tone: 'red',
     },
   ];
@@ -61,4 +57,23 @@ export class DashboardHomeComponent {
       status: 'En reparación',
     },
   ];
+
+  get filteredRecentIntakes() {
+    const term = this.searchTerm.trim().toLowerCase();
+
+    if (!term) {
+      return this.recentIntakes;
+    }
+
+    return this.recentIntakes.filter((item) =>
+      [item.time, item.plate, item.customer, item.vehicle, item.status].some(
+        (value) => value.toLowerCase().includes(term),
+      ),
+    );
+  }
+
+  updateSearchTerm(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchTerm = input.value;
+  }
 }

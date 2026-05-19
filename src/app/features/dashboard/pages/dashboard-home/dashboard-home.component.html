@@ -22,6 +22,7 @@
       class="stat-card"
       [class.stat-card--red]="stat.tone === 'red'"
       [class.stat-card--orange]="stat.tone === 'orange'"
+      [class.stat-card--green]="stat.tone === 'green'"
     >
       <span class="stat-card__label">{{ stat.label }}</span>
       <strong>{{ stat.value }}</strong>
@@ -37,10 +38,31 @@
           <h3>Últimos vehículos ingresados</h3>
         </div>
 
-        <a routerLink="/vehicle-intake" class="panel-link">Ver todos</a>
+        <a routerLink="/vehicle-intake/new" class="panel-link">
+          Nuevo ingreso
+        </a>
       </div>
 
-      <div class="table-wrapper">
+      <div class="panel-tools">
+        <label class="search-box">
+          <span>⌕</span>
+          <input
+            type="search"
+            placeholder="Buscar por placa, cliente, vehículo, hora o estado..."
+            [value]="searchTerm"
+            (input)="updateSearchTerm($event)"
+          />
+        </label>
+
+        <span class="result-counter">
+          {{ filteredRecentIntakes.length }} registros
+        </span>
+      </div>
+
+      <div
+        class="table-wrapper"
+        *ngIf="filteredRecentIntakes.length; else emptyIntakes"
+      >
         <table>
           <thead>
             <tr>
@@ -54,7 +76,7 @@
           </thead>
 
           <tbody>
-            <tr *ngFor="let item of recentIntakes">
+            <tr *ngFor="let item of filteredRecentIntakes">
               <td>{{ item.time }}</td>
               <td>
                 <strong class="plate">{{ item.plate }}</strong>
@@ -72,20 +94,13 @@
           </tbody>
         </table>
       </div>
-    </article>
 
-    <article class="panel">
-      <p class="section-label">Flujo recomendado</p>
-      <h3>Atención rápida</h3>
-
-      <div class="workflow">
-        <span>1. Cliente</span>
-        <span>2. Vehículo</span>
-        <span>3. Ingreso</span>
-        <span>4. Orden</span>
-        <span>5. Repuestos</span>
-        <span>6. Impresión</span>
-      </div>
+      <ng-template #emptyIntakes>
+        <div class="empty-state">
+          <strong>No se encontraron vehículos ingresados</strong>
+          <span>Prueba con otra placa, cliente, vehículo o estado.</span>
+        </div>
+      </ng-template>
     </article>
   </section>
 </section>

@@ -1,0 +1,141 @@
+<div class="modal-backdrop" role="presentation" (click)="closeModal()">
+  <section
+    class="modal-card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="vehicle-form-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="modal-header">
+      <div>
+        <span class="eyebrow">Vehículos</span>
+        <h2 id="vehicle-form-title">{{ modalTitle }}</h2>
+        <p>{{ modalDescription }}</p>
+      </div>
+
+      <button type="button" class="close-button" (click)="closeModal()">
+        ×
+      </button>
+    </header>
+
+    <form
+      [formGroup]="vehicleForm"
+      (ngSubmit)="submitForm()"
+      class="modal-form"
+    >
+      <section class="form-section">
+        <h3>Cliente propietario</h3>
+
+        <div class="form-grid">
+          <label class="form-field form-field--full">
+            <span>Cliente *</span>
+            <select formControlName="customerId">
+              <option value="">Selecciona un cliente</option>
+              <option *ngFor="let customer of customers" [value]="customer.id">
+                {{ customer.fullName }} · {{ customer.phone }}
+              </option>
+            </select>
+            <small *ngIf="isInvalid('customerId')">
+              Debes seleccionar el cliente propietario.
+            </small>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3>Datos del vehículo</h3>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span>Placa *</span>
+            <input
+              type="text"
+              formControlName="plateNumber"
+              placeholder="Ej. 123ABC"
+            />
+            <small *ngIf="isInvalid('plateNumber')">
+              La placa es obligatoria.
+            </small>
+          </label>
+
+          <label class="form-field">
+            <span>Marca *</span>
+            <input
+              type="text"
+              formControlName="brand"
+              placeholder="Ej. Toyota"
+            />
+            <small *ngIf="isInvalid('brand')"> La marca es obligatoria. </small>
+          </label>
+
+          <label class="form-field">
+            <span>Modelo *</span>
+            <input
+              type="text"
+              formControlName="model"
+              placeholder="Ej. Corolla"
+            />
+            <small *ngIf="isInvalid('model')">
+              El modelo es obligatorio.
+            </small>
+          </label>
+
+          <label class="form-field">
+            <span>Año</span>
+            <input
+              type="number"
+              formControlName="year"
+              placeholder="Ej. 2018"
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Color</span>
+            <input
+              type="text"
+              formControlName="color"
+              placeholder="Ej. Blanco"
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Kilometraje</span>
+            <input
+              type="number"
+              formControlName="mileage"
+              placeholder="Ej. 85000"
+            />
+          </label>
+
+          <label class="form-field form-field--full">
+            <span>VIN / Chasis</span>
+            <input
+              type="text"
+              formControlName="vin"
+              placeholder="Número de chasis si aplica"
+            />
+          </label>
+
+          <label class="form-field form-field--full">
+            <span>Observaciones</span>
+            <input
+              type="text"
+              formControlName="observations"
+              placeholder="Observaciones generales del vehículo"
+            />
+          </label>
+        </div>
+      </section>
+
+      <footer class="modal-actions">
+        <button type="button" class="secondary-button" (click)="closeModal()">
+          Cancelar
+        </button>
+
+        <button type="submit" class="primary-button">
+          {{ vehicle ? "Guardar cambios" : "Registrar vehículo" }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

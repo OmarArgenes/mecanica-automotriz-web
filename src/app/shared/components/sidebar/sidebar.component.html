@@ -13,9 +13,24 @@
         <span>Tecnología Automotriz</span>
       </div>
     </div>
+
+    <button
+      type="button"
+      class="mobile-menu-button"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="isMobileMenuOpen"
+      aria-label="Abrir o cerrar menú"
+    >
+      <span class="mobile-menu-button__icon"></span>
+      <span class="mobile-menu-button__text"></span>
+    </button>
   </div>
 
-  <a class="primary-action" routerLink="/vehicle-intake/new">
+  <a
+    class="primary-action"
+    routerLink="/vehicle-intake/new"
+    (click)="closeMobileMenu()"
+  >
     <span class="primary-action__icon">+</span>
     <span>
       <strong>Nuevo ingreso</strong>
@@ -23,7 +38,29 @@
     </span>
   </a>
 
-  <nav class="navigation" aria-label="Menú principal">
+  <div
+    class="mobile-menu-backdrop"
+    *ngIf="isMobileMenuOpen"
+    (click)="closeMobileMenu()"
+  ></div>
+
+  <nav
+    class="navigation"
+    [class.navigation--open]="isMobileMenuOpen"
+    aria-label="Menú principal"
+  >
+    <div class="mobile-navigation-header">
+      <strong>Menú principal</strong>
+
+      <button
+        type="button"
+        (click)="closeMobileMenu()"
+        aria-label="Cerrar menú"
+      >
+        ×
+      </button>
+    </div>
+
     <section *ngFor="let group of menuGroups" class="menu-group">
       <p class="menu-title">{{ group.title }}</p>
 
@@ -34,6 +71,7 @@
         [routerLink]="item.route"
         routerLinkActive="menu-link--active"
         [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+        (click)="closeMobileMenu()"
       >
         <span class="menu-icon">{{ item.icon }}</span>
         <span class="menu-label">{{ item.label }}</span>
@@ -45,7 +83,7 @@
     <span class="status-dot"></span>
     <div>
       <strong>Sistema interno</strong>
-      <small>Gestión de taller CANED</small>
+      <small>Gestión de taller CANEDO</small>
     </div>
   </div>
 </aside>

@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { WorkOrder } from '../models/work-order.model';
+
+import { WorkOrder, WorkOrderChargeItem } from '../models/work-order.model';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +21,8 @@ export class WorkOrdersService {
         'El cliente reporta ruido en la parte delantera del vehículo y solicita una revisión general.',
       workDescription:
         'Diagnóstico inicial, revisión de suspensión, revisión de frenos y cambio de aceite.',
-      totalAmount: 350,
+      chargeItems: [],
+      totalAmount: 0,
       status: 'pending',
     },
     {
@@ -37,7 +39,8 @@ export class WorkOrdersService {
         'El vehículo presenta vibración al momento de frenar.',
       workDescription:
         'Revisión de discos, pastillas de freno y sistema hidráulico.',
-      totalAmount: 280,
+      chargeItems: [],
+      totalAmount: 0,
       status: 'pending',
     },
     {
@@ -54,6 +57,29 @@ export class WorkOrdersService {
       problemDescription: 'Mantenimiento preventivo solicitado por el cliente.',
       workDescription:
         'Cambio de aceite, limpieza de inyectores, revisión de frenos y control general.',
+      chargeItems: [
+        {
+          id: 'charge-1',
+          description: 'Cambio de aceite',
+          quantity: 1,
+          amount: 180,
+          subtotal: 180,
+        },
+        {
+          id: 'charge-2',
+          description: 'Limpieza de inyectores',
+          quantity: 1,
+          amount: 260,
+          subtotal: 260,
+        },
+        {
+          id: 'charge-3',
+          description: 'Revisión de frenos',
+          quantity: 1,
+          amount: 180,
+          subtotal: 180,
+        },
+      ],
       totalAmount: 620,
       status: 'completed',
     },
@@ -80,10 +106,12 @@ export class WorkOrdersService {
   getWorkOrderById(orderId: string): WorkOrder | undefined {
     return this.workOrdersSignal().find((order) => order.id === orderId);
   }
+
   updateWorkOrderDetails(
     orderId: string,
     workDescription: string,
     totalAmount: number,
+    chargeItems: WorkOrderChargeItem[] = [],
   ): void {
     this.workOrdersSignal.update((orders) =>
       orders.map((order) =>
@@ -92,6 +120,7 @@ export class WorkOrdersService {
               ...order,
               workDescription,
               totalAmount,
+              chargeItems: chargeItems.map((item) => ({ ...item })),
             }
           : order,
       ),

@@ -127,3 +127,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+.charge-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.charge-table th,
+.charge-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 13px;
+}
+
+.charge-table th {
+  background: #eef6ff;
+  color: #1f2937;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.35px;
+}
+
+.charge-table td:last-child,
+.charge-table th:last-child {
+  text-align: right;
+  font-weight: 800;
+}
