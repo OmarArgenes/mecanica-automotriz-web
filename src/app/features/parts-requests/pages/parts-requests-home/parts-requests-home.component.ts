@@ -95,20 +95,27 @@ export class PartsRequestsHomeComponent {
     this.isRequestModalOpen.set(false);
   }
 
-  savePartRequest(formValue: PartRequestFormValue): void {
+  async savePartRequest(formValue: PartRequestFormValue): Promise<void> {
     const order = this.selectedOrder();
 
     if (!order) {
       return;
     }
 
-    this.partsRequestsService.createPartRequest(
-      order,
-      formValue.workshopProvidesParts,
-      formValue.parts,
-    );
+    try {
+      await this.partsRequestsService.createPartRequest(
+        order,
+        formValue.workshopProvidesParts,
+        formValue.parts,
+      );
 
-    this.closeRequestModal();
+      this.closeRequestModal();
+    } catch (error) {
+      console.error(error);
+      window.alert(
+        'No se pudo guardar la solicitud de repuestos. Intenta nuevamente.',
+      );
+    }
   }
 
   printPartRequest(request: PartRequest): void {
