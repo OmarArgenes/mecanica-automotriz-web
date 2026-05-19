@@ -95,19 +95,26 @@ export class VehiclesHomeComponent {
     this.vehicleToEdit.set(null);
   }
 
-  saveVehicle(formValue: VehicleFormValue): void {
+  async saveVehicle(formValue: VehicleFormValue): Promise<void> {
     const vehicle = this.vehicleToEdit();
 
-    if (vehicle) {
-      this.vehiclesService.updateVehicle(vehicle.id, formValue);
-    } else {
-      this.vehiclesService.createVehicle(formValue);
-    }
+    try {
+      if (vehicle) {
+        await this.vehiclesService.updateVehicle(vehicle.id, formValue);
+      } else {
+        await this.vehiclesService.createVehicle(formValue);
+      }
 
-    this.closeFormModal();
+      this.closeFormModal();
+    } catch (error) {
+      console.error(error);
+      window.alert(
+        'No se pudo guardar el vehículo. Revisa los datos e intenta nuevamente.',
+      );
+    }
   }
 
-  deleteVehicle(vehicle: VehicleListItem): void {
+  async deleteVehicle(vehicle: VehicleListItem): Promise<void> {
     const confirmed = window.confirm(
       `¿Seguro que deseas eliminar el vehículo ${vehicle.plateNumber}?`,
     );
@@ -116,6 +123,13 @@ export class VehiclesHomeComponent {
       return;
     }
 
-    this.vehiclesService.deleteVehicle(vehicle.id);
+    try {
+      await this.vehiclesService.deleteVehicle(vehicle.id);
+    } catch (error) {
+      console.error(error);
+      window.alert(
+        'No se pudo eliminar el vehículo. Puede tener órdenes o solicitudes relacionadas.',
+      );
+    }
   }
 }

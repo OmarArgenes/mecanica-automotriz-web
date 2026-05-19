@@ -22,8 +22,8 @@ export class VehiclesService {
     ),
   );
 
-  createVehicle(formValue: VehicleFormValue): void {
-    this.customersService.addVehicleToCustomer(formValue.customerId, {
+  async createVehicle(formValue: VehicleFormValue): Promise<void> {
+    await this.customersService.addVehicleToCustomer(formValue.customerId, {
       plateNumber: formValue.plateNumber,
       brand: formValue.brand,
       model: formValue.model,
@@ -35,15 +35,18 @@ export class VehiclesService {
     });
   }
 
-  updateVehicle(vehicleId: string, formValue: VehicleFormValue): void {
+  async updateVehicle(
+    vehicleId: string,
+    formValue: VehicleFormValue,
+  ): Promise<void> {
     const currentVehicle = this.findVehicleOwner(vehicleId);
 
     if (!currentVehicle) {
-      return;
+      throw new Error('No se encontró el vehículo seleccionado.');
     }
 
     if (currentVehicle.customerId === formValue.customerId) {
-      this.customersService.updateVehicleForCustomer(
+      await this.customersService.updateVehicleForCustomer(
         currentVehicle.customerId,
         vehicleId,
         {
@@ -62,12 +65,12 @@ export class VehiclesService {
       return;
     }
 
-    this.customersService.deleteVehicleFromCustomer(
+    await this.customersService.deleteVehicleFromCustomer(
       currentVehicle.customerId,
       vehicleId,
     );
 
-    this.customersService.addVehicleToCustomer(formValue.customerId, {
+    await this.customersService.addVehicleToCustomer(formValue.customerId, {
       id: vehicleId,
       plateNumber: formValue.plateNumber,
       brand: formValue.brand,
@@ -80,14 +83,14 @@ export class VehiclesService {
     });
   }
 
-  deleteVehicle(vehicleId: string): void {
+  async deleteVehicle(vehicleId: string): Promise<void> {
     const currentVehicle = this.findVehicleOwner(vehicleId);
 
     if (!currentVehicle) {
-      return;
+      throw new Error('No se encontró el vehículo seleccionado.');
     }
 
-    this.customersService.deleteVehicleFromCustomer(
+    await this.customersService.deleteVehicleFromCustomer(
       currentVehicle.customerId,
       vehicleId,
     );
