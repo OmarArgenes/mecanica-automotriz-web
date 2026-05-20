@@ -9,9 +9,15 @@
       </p>
     </div>
 
-    <a routerLink="/vehicle-intake/new" class="hero-button">
-      Crear nuevo ingreso
-    </a>
+    <div class="header-actions">
+      <button type="button" class="hero-button" (click)="refreshDashboard()">
+        Actualizar datos
+      </button>
+
+      <a routerLink="/vehicle-intake/new" class="hero-button">
+        Crear nuevo ingreso
+      </a>
+    </div>
   </div>
 
   <app-quick-actions />

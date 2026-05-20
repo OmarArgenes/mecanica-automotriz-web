@@ -2,7 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+
 import { PrintDocumentsService } from '../../../print-documents/data-access/print-documents.service';
+import { WorkOrdersService } from '../../../work-orders/data-access/work-orders.service';
+import { VehicleIntakeService } from '../../data-access/vehicle-intake.service';
 
 @Component({
   selector: 'app-vehicle-intake-new',
@@ -14,8 +17,11 @@ import { PrintDocumentsService } from '../../../print-documents/data-access/prin
 export class VehicleIntakeNewComponent {
   private readonly fb = inject(FormBuilder);
   private readonly printDocumentsService = inject(PrintDocumentsService);
+  private readonly vehicleIntakeService = inject(VehicleIntakeService);
+  private readonly workOrdersService = inject(WorkOrdersService);
 
   isSaved = false;
+  isSaving = false;
   receptionCode = '';
   orderCode = '';
 
@@ -64,7 +70,7 @@ export class VehicleIntakeNewComponent {
     initialObservation: [''],
   });
 
-  submitForm(): void {
+  async submitForm(): Promise<void> {
     this.isSaved = false;
 
     if (this.intakeForm.invalid) {
@@ -72,11 +78,48 @@ export class VehicleIntakeNewComponent {
       return;
     }
 
-    const timestamp = Date.now().toString().slice(-6);
+    this.isSaving = true;
 
-    this.receptionCode = `REC-${timestamp}`;
-    this.orderCode = `OT-${timestamp}`;
-    this.isSaved = true;
+    try {
+      const rawValue = this.intakeForm.getRawValue();
+
+      const result = await this.vehicleIntakeService.createVehicleIntake({
+        customerFullName: rawValue.customerFullName ?? '',
+        customerPhone: rawValue.customerPhone ?? '',
+        customerDocument: rawValue.customerDocument ?? '',
+        customerAddress: rawValue.customerAddress ?? '',
+
+        plate: rawValue.plate ?? '',
+        brand: rawValue.brand ?? '',
+        model: rawValue.model ?? '',
+        year: rawValue.year ?? '',
+        color: rawValue.color ?? '',
+        mileage: rawValue.mileage ?? '',
+        fuelType: rawValue.fuelType ?? '',
+
+        intakeDate: rawValue.intakeDate ?? this.getTodayDate(),
+        intakeTime: rawValue.intakeTime ?? this.getCurrentTime(),
+        arrivalMethod: rawValue.arrivalMethod ?? '',
+        arrivalState: rawValue.arrivalState ?? '',
+        reportedProblems: rawValue.reportedProblems ?? '',
+        initialObservation: rawValue.initialObservation ?? '',
+      });
+
+      this.receptionCode = result.receptionCode;
+      this.orderCode = result.orderCode;
+      this.isSaved = true;
+
+      await this.workOrdersService.loadWorkOrders();
+    } catch (error) {
+      console.error(error);
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo registrar el ingreso. Intenta nuevamente.',
+      );
+    } finally {
+      this.isSaving = false;
+    }
   }
 
   printReceptionReceipt(): void {
@@ -114,6 +157,7 @@ export class VehicleIntakeNewComponent {
 
   resetForm(): void {
     this.isSaved = false;
+    this.isSaving = false;
     this.receptionCode = '';
     this.orderCode = '';
 

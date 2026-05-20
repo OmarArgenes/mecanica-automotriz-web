@@ -1,3 +1,11 @@
+export type PartRequestStatus =
+  | 'pending'
+  | 'quoted'
+  | 'approved'
+  | 'purchased'
+  | 'delivered'
+  | 'cancelled';
+
 export interface PartRequest {
   id: string;
   requestNumber: string;
@@ -13,7 +21,11 @@ export interface PartRequest {
   plateNumber: string;
 
   requestedAt: string;
+  neededDate?: string;
+  status: PartRequestStatus;
   workshopProvidesParts: boolean;
+  notes?: string;
+  totalAmount: number;
 
   parts: PartRequestItem[];
 }
@@ -22,6 +34,10 @@ export interface PartRequestItem {
   id: string;
   name: string;
   quantity: number;
+  unitPrice?: number;
+  subtotal?: number;
+  supplierName?: string;
+  notes?: string;
 }
 
 export interface PartRequestFormValue {

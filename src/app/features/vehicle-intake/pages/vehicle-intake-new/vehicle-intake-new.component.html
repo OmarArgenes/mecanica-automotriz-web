@@ -205,8 +205,12 @@
         Cancelar
       </a>
 
-      <button type="submit" class="button button--primary">
-        Guardar ingreso
+      <button
+        type="submit"
+        class="button button--primary"
+        [disabled]="isSaving"
+      >
+        {{ isSaving ? "Guardando..." : "Guardar ingreso" }}
       </button>
     </footer>
 
@@ -269,7 +273,7 @@
   <section class="print-receipt" *ngIf="isSaved">
     <header class="receipt-header">
       <div>
-        <h1>CANED Tecnología Automotriz</h1>
+        <h1>CANEDO Tecnología Automotriz</h1>
         <p>Diagnóstico, servicio y reparación</p>
       </div>
 

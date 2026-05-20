@@ -13,11 +13,37 @@
       + Nuevo ingreso
     </a>
 
-    <div class="user-chip">
-      <span>OQ</span>
-      <div>
-        <strong>Administrador</strong>
-        <small>Operación activa</small>
+    <div class="user-menu">
+      <button
+        type="button"
+        class="user-chip"
+        (click)="toggleUserMenu()"
+        [attr.aria-expanded]="isUserMenuOpen"
+      >
+        <span>{{ userInitials() }}</span>
+
+        <div>
+          <strong>Administrador</strong>
+          <small>{{ userEmail() }}</small>
+        </div>
+
+        <span class="user-chip__arrow">⌄</span>
+      </button>
+
+      <div class="user-dropdown" *ngIf="isUserMenuOpen">
+        <div class="user-dropdown__header">
+          <strong>Sesión activa</strong>
+          <small>{{ userEmail() }}</small>
+        </div>
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="logout()"
+          [disabled]="isLoggingOut"
+        >
+          {{ isLoggingOut ? "Cerrando sesión..." : "Cerrar sesión" }}
+        </button>
       </div>
     </div>
   </div>

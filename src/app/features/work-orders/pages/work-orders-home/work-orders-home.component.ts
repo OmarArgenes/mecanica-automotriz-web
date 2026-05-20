@@ -53,7 +53,7 @@ export class WorkOrdersHomeComponent {
     this.selectedOrder.set(null);
   }
 
-  finishOrder(order: WorkOrder): void {
+  async finishOrder(order: WorkOrder): Promise<void> {
     const chargeItems = order.chargeItems ?? [];
 
     if (chargeItems.length === 0) {
@@ -71,52 +71,69 @@ export class WorkOrdersHomeComponent {
       return;
     }
 
-    this.workOrdersService.updateWorkOrderDetails(
-      order.id,
-      order.workDescription,
-      order.totalAmount,
-      chargeItems,
-    );
+    try {
+      await this.workOrdersService.updateWorkOrderDetails(
+        order.id,
+        order.workDescription,
+        order.totalAmount,
+        chargeItems,
+      );
 
-    this.workOrdersService.finishWorkOrder(order.id);
-    this.closeModal();
+      await this.workOrdersService.finishWorkOrder(order.id);
+      this.closeModal();
+    } catch (error) {
+      console.error(error);
+      window.alert('No se pudo finalizar la orden. Intenta nuevamente.');
+    }
   }
 
-  printOrder(order: WorkOrder): void {
+  async printOrder(order: WorkOrder): Promise<void> {
     const chargeItems = order.chargeItems ?? [];
 
-    this.workOrdersService.updateWorkOrderDetails(
-      order.id,
-      order.workDescription,
-      order.totalAmount,
-      chargeItems,
-    );
+    try {
+      await this.workOrdersService.updateWorkOrderDetails(
+        order.id,
+        order.workDescription,
+        order.totalAmount,
+        chargeItems,
+      );
 
-    this.printDocumentsService.printWorkOrder({
-      orderNumber: order.orderNumber,
-      status: order.status,
+      const updatedOrder = this.workOrdersService.getWorkOrderById(
+        order.id,
+      ) ?? {
+        ...order,
+        chargeItems,
+      };
 
-      customer: {
-        name: order.customerName,
-        phone: order.customerPhone,
-      },
+      this.printDocumentsService.printWorkOrder({
+        orderNumber: updatedOrder.orderNumber,
+        status: updatedOrder.status,
 
-      vehicle: {
-        brand: order.vehicleBrand,
-        model: order.vehicleModel,
-        plateNumber: order.plateNumber,
-      },
+        customer: {
+          name: updatedOrder.customerName,
+          phone: updatedOrder.customerPhone,
+        },
 
-      dates: {
-        receptionDate: order.receptionDate,
-        completedDate: order.completedDate,
-      },
+        vehicle: {
+          brand: updatedOrder.vehicleBrand,
+          model: updatedOrder.vehicleModel,
+          plateNumber: updatedOrder.plateNumber,
+        },
 
-      mechanicName: order.mechanicName,
-      problemDescription: order.problemDescription,
-      workDescription: order.workDescription,
-      chargeItems,
-      totalAmount: order.totalAmount,
-    });
+        dates: {
+          receptionDate: updatedOrder.receptionDate,
+          completedDate: updatedOrder.completedDate,
+        },
+
+        mechanicName: updatedOrder.mechanicName,
+        problemDescription: updatedOrder.problemDescription,
+        workDescription: updatedOrder.workDescription,
+        chargeItems: updatedOrder.chargeItems,
+        totalAmount: updatedOrder.totalAmount,
+      });
+    } catch (error) {
+      console.error(error);
+      window.alert('No se pudo preparar la impresión de la orden.');
+    }
   }
 }
