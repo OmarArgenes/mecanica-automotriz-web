@@ -10,6 +10,8 @@ export class AuthService {
   private readonly sessionSignal = signal<Session | null>(null);
   private readonly userSignal = signal<User | null>(null);
 
+  private readonly loginDateStorageKey = 'workshop_login_date';
+
   readonly session = this.sessionSignal.asReadonly();
   readonly user = this.userSignal.asReadonly();
 
@@ -25,14 +27,18 @@ export class AuthService {
   async loadSession(): Promise<void> {
     const { data, error } = await supabase.auth.getSession();
 
-    if (error) {
-      this.sessionSignal.set(null);
-      this.userSignal.set(null);
+    if (error || !data.session) {
+      this.clearLocalSession();
+      return;
+    }
+
+    if (!this.isLoginFromToday()) {
+      await this.signOut();
       return;
     }
 
     this.sessionSignal.set(data.session);
-    this.userSignal.set(data.session?.user ?? null);
+    this.userSignal.set(data.session.user);
   }
 
   async signIn(email: string, password: string): Promise<void> {
@@ -45,6 +51,8 @@ export class AuthService {
       throw new Error(error.message);
     }
 
+    this.saveTodayLoginDate();
+
     this.sessionSignal.set(data.session);
     this.userSignal.set(data.user);
   }
@@ -56,17 +64,45 @@ export class AuthService {
       throw new Error(error.message);
     }
 
-    this.sessionSignal.set(null);
-    this.userSignal.set(null);
+    this.clearLocalSession();
   }
 
   async isAuthenticated(): Promise<boolean> {
     const { data, error } = await supabase.auth.getSession();
 
     if (error || !data.session) {
+      this.clearLocalSession();
       return false;
     }
 
+    if (!this.isLoginFromToday()) {
+      await this.signOut();
+      return false;
+    }
+
+    this.sessionSignal.set(data.session);
+    this.userSignal.set(data.session.user);
+
     return true;
+  }
+
+  private saveTodayLoginDate(): void {
+    sessionStorage.setItem(this.loginDateStorageKey, this.getTodayKey());
+  }
+
+  private isLoginFromToday(): boolean {
+    return (
+      sessionStorage.getItem(this.loginDateStorageKey) === this.getTodayKey()
+    );
+  }
+
+  private getTodayKey(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  private clearLocalSession(): void {
+    sessionStorage.removeItem(this.loginDateStorageKey);
+    this.sessionSignal.set(null);
+    this.userSignal.set(null);
   }
 }

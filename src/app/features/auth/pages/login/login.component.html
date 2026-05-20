@@ -1,46 +1,55 @@
 <section class="login-page">
   <div class="login-card">
-    <div class="login-brand">
-      <img src="images/caned-logo.png" alt="Logo del taller" />
-      <span>Sistema de Gestión Automotriz</span>
+    <div class="login-logo-panel">
+      <img src="/images/caned-logo.png" alt="CANEDO Tecnología Automotriz" />
     </div>
 
-    <div class="login-header">
-      <p>Acceso interno</p>
-      <h1>Iniciar sesión</h1>
-      <span>Ingresa con el usuario autorizado del taller.</span>
+    <div class="login-content">
+      <div class="login-brand-text">
+        <span>Sistema de Gestión Automotriz</span>
+        <strong>CANEDO Tecnología Automotriz</strong>
+      </div>
+
+      <div class="login-header">
+        <p>Acceso interno</p>
+        <h1>Iniciar sesión</h1>
+        <span
+          >Ingresa con el usuario autorizado para acceder al sistema interno del
+          taller.</span
+        >
+      </div>
+
+      <form class="login-form" (ngSubmit)="submitLogin()">
+        <label>
+          Correo electrónico
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            autocomplete="email"
+            placeholder="correo@taller.com"
+          />
+        </label>
+
+        <label>
+          Contraseña
+          <input
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            autocomplete="current-password"
+            placeholder="Ingresa tu contraseña"
+          />
+        </label>
+
+        <p class="error-message" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </p>
+
+        <button type="submit" [disabled]="loading">
+          {{ loading ? "Ingresando..." : "Ingresar al sistema" }}
+        </button>
+      </form>
     </div>
-
-    <form class="login-form" (ngSubmit)="submitLogin()">
-      <label>
-        Correo electrónico
-        <input
-          type="email"
-          name="email"
-          [(ngModel)]="email"
-          autocomplete="email"
-          placeholder="correo@taller.com"
-        />
-      </label>
-
-      <label>
-        Contraseña
-        <input
-          type="password"
-          name="password"
-          [(ngModel)]="password"
-          autocomplete="current-password"
-          placeholder="Ingresa tu contraseña"
-        />
-      </label>
-
-      <p class="error-message" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </p>
-
-      <button type="submit" [disabled]="loading">
-        {{ loading ? "Ingresando..." : "Ingresar al sistema" }}
-      </button>
-    </form>
   </div>
 </section>
