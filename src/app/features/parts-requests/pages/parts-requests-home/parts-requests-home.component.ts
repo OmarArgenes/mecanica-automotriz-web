@@ -16,6 +16,7 @@ import { SelectedWorkOrderPanelComponent } from '../../components/selected-work-
 import { PartRequestFormModalComponent } from '../../components/part-request-form-modal/part-request-form-modal.component';
 import { PartRequestHistoryComponent } from '../../components/part-request-history/part-request-history.component';
 import { PrintDocumentsService } from '../../../print-documents/data-access/print-documents.service';
+
 @Component({
   selector: 'app-parts-requests-home',
   standalone: true,
@@ -34,8 +35,10 @@ export class PartsRequestsHomeComponent {
   private readonly workOrdersService = inject(WorkOrdersService);
   private readonly partsRequestsService = inject(PartsRequestsService);
   private readonly printDocumentsService = inject(PrintDocumentsService);
+
   readonly selectedWorkOrderId = signal<string | null>(null);
   readonly isRequestModalOpen = signal(false);
+  readonly editingRequest = signal<PartRequest | null>(null);
 
   readonly pendingOrders = computed(() =>
     this.workOrdersService
@@ -68,15 +71,13 @@ export class PartsRequestsHomeComponent {
     return this.partsRequestsService.getRequestsByWorkOrder(order.id);
   });
 
-  readonly totalRequests = computed(
-    () => this.partsRequestsService.partRequests().length,
-  );
+  readonly totalRequests = computed(() => this.selectedOrderRequests().length);
 
   readonly totalWorkshopProvided = computed(
     () =>
-      this.partsRequestsService
-        .partRequests()
-        .filter((request) => request.workshopProvidesParts).length,
+      this.selectedOrderRequests().filter(
+        (request) => request.workshopProvidesParts,
+      ).length,
   );
 
   selectOrder(order: WorkOrder): void {
@@ -88,33 +89,68 @@ export class PartsRequestsHomeComponent {
       return;
     }
 
+    this.editingRequest.set(null);
+    this.isRequestModalOpen.set(true);
+  }
+
+  openEditRequestModal(request: PartRequest): void {
+    this.editingRequest.set(request);
     this.isRequestModalOpen.set(true);
   }
 
   closeRequestModal(): void {
     this.isRequestModalOpen.set(false);
+    this.editingRequest.set(null);
   }
 
   async savePartRequest(formValue: PartRequestFormValue): Promise<void> {
     const order = this.selectedOrder();
+    const requestToEdit = this.editingRequest();
 
     if (!order) {
       return;
     }
 
     try {
-      await this.partsRequestsService.createPartRequest(
-        order,
-        formValue.workshopProvidesParts,
-        formValue.parts,
-      );
+      if (requestToEdit) {
+        await this.partsRequestsService.updatePartRequest(
+          requestToEdit.id,
+          formValue.workshopProvidesParts,
+          formValue.parts,
+        );
+      } else {
+        await this.partsRequestsService.createPartRequest(
+          order,
+          formValue.workshopProvidesParts,
+          formValue.parts,
+        );
+      }
 
       this.closeRequestModal();
     } catch (error) {
       console.error(error);
       window.alert(
-        'No se pudo guardar la solicitud de repuestos. Intenta nuevamente.',
+        requestToEdit
+          ? 'No se pudo actualizar la solicitud de repuestos. Intenta nuevamente.'
+          : 'No se pudo guardar la solicitud de repuestos. Intenta nuevamente.',
       );
+    }
+  }
+
+  async deletePartRequest(request: PartRequest): Promise<void> {
+    const confirmed = window.confirm(
+      `¿Seguro que deseas eliminar la solicitud ${request.requestNumber}?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await this.partsRequestsService.deletePartRequest(request.id);
+    } catch (error) {
+      console.error(error);
+      window.alert('No se pudo eliminar la solicitud. Intenta nuevamente.');
     }
   }
 
