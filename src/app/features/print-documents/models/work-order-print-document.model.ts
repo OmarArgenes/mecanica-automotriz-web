@@ -25,7 +25,9 @@ export interface WorkOrderPrintDocument {
 
   dates: {
     receptionDate: string;
+    receptionTime?: string;
     completedDate?: string;
+    completedAt?: string;
   };
 
   mechanicName: string;

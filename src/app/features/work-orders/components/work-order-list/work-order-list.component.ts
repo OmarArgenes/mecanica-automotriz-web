@@ -3,6 +3,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { WorkOrder, WorkOrderStatus } from '../../models/work-order.model';
+import {
+  formatDateAndTime,
+  formatTimestamp,
+} from '../../../../shared/utils/date-time-format.util';
 
 @Component({
   selector: 'app-work-order-list',
@@ -19,6 +23,10 @@ export class WorkOrderListComponent {
   @Input() orders: WorkOrder[] = [];
 
   @Output() orderSelected = new EventEmitter<WorkOrder>();
+  @Output() printRequested = new EventEmitter<WorkOrder>();
+  @Output() deleteRequested = new EventEmitter<WorkOrder>();
+  @Output() finishRequested = new EventEmitter<WorkOrder>();
+  @Output() reopenRequested = new EventEmitter<WorkOrder>();
 
   searchTerm = '';
 
@@ -43,6 +51,30 @@ export class WorkOrderListComponent {
       );
     });
   }
+  formatDateTime(value?: string): string {
+    if (!value) {
+      return '-';
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleString('es-BO', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    });
+  }
+
+  formatReceptionDateTime(order: WorkOrder): string {
+    return formatDateAndTime(order.receptionDate, order.receptionTime);
+  }
+
+  formatCompletedDateTime(order: WorkOrder): string {
+    return formatTimestamp(order.completedAt, order.completedDate);
+  }
 
   get isPendingList(): boolean {
     return this.statusType === 'pending';
@@ -50,6 +82,22 @@ export class WorkOrderListComponent {
 
   selectOrder(order: WorkOrder): void {
     this.orderSelected.emit(order);
+  }
+
+  printOrder(order: WorkOrder): void {
+    this.printRequested.emit(order);
+  }
+
+  deleteOrder(order: WorkOrder): void {
+    this.deleteRequested.emit(order);
+  }
+
+  finishOrder(order: WorkOrder): void {
+    this.finishRequested.emit(order);
+  }
+
+  reopenOrder(order: WorkOrder): void {
+    this.reopenRequested.emit(order);
   }
 
   trackByOrderId(_: number, order: WorkOrder): string {

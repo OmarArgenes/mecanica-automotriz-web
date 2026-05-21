@@ -55,13 +55,13 @@
         </article>
 
         <article class="info-card">
-          <span>Fecha de ingreso</span>
-          <strong>{{ order.receptionDate }}</strong>
+          <span>Fecha y hora de ingreso</span>
+          <strong>{{ formatReceptionDateTime() }}</strong>
         </article>
 
         <article class="info-card">
-          <span>Fecha de finalización</span>
-          <strong>{{ order.completedDate || "-" }}</strong>
+          <span>Fecha y hora de finalización</span>
+          <strong>{{ formatCompletedDateTime() }}</strong>
         </article>
 
         <article class="info-card">
@@ -91,7 +91,7 @@
         </header>
 
         <form
-          *ngIf="isPending"
+          *ngIf="canEditChargeItems"
           class="charge-form"
           (ngSubmit)="addOrUpdateChargeItem()"
         >
@@ -170,7 +170,7 @@
 
             <strong class="charge-item-subtotal">Bs {{ item.subtotal }}</strong>
 
-            <div class="charge-item-actions" *ngIf="isPending">
+            <div class="charge-item-actions" *ngIf="canEditChargeItems">
               <button type="button" (click)="editChargeItem(item)">
                 Editar
               </button>
@@ -206,6 +206,15 @@
     <footer class="modal-actions">
       <button type="button" class="secondary-button" (click)="print()">
         {{ isPending ? "Imprimir orden" : "Reimprimir orden" }}
+      </button>
+
+      <button
+        *ngIf="isEditMode"
+        type="button"
+        class="save-button"
+        (click)="save()"
+      >
+        Guardar cambios
       </button>
 
       <button

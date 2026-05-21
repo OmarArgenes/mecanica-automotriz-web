@@ -1,4 +1,8 @@
 import { WorkOrderPrintDocument } from '../models/work-order-print-document.model';
+import {
+  formatDateAndTime,
+  formatTimestamp,
+} from '../../../shared/utils/date-time-format.util';
 
 export function buildWorkOrderTemplate(
   document: WorkOrderPrintDocument,
@@ -57,12 +61,19 @@ export function buildWorkOrderTemplate(
             ['Placa', document.vehicle.plateNumber],
             ['Mecánico asignado', document.mechanicName],
           ])}
-
-          ${sectionTitle('Fechas de control')}
-          ${dataGrid([
-            ['Fecha de recepción', document.dates.receptionDate],
-            ['Fecha de finalización', document.dates.completedDate || '—'],
-          ])}
+${dataGrid([
+  [
+    'Fecha y hora de recepción',
+    formatDateAndTime(
+      document.dates.receptionDate,
+      document.dates.receptionTime,
+    ),
+  ],
+  [
+    'Fecha y hora de finalización',
+    formatTimestamp(document.dates.completedAt, document.dates.completedDate),
+  ],
+])}
 
           ${textBlock('Problema reportado', document.problemDescription)}
          
@@ -453,6 +464,23 @@ function chargeDetailTable(document: WorkOrderPrintDocument): string {
 function display(value: string | number | undefined): string {
   const normalizedValue = String(value ?? '').trim();
   return normalizedValue ? safe(normalizedValue) : '—';
+}
+
+function formatDateTime(value: string | undefined): string {
+  if (!value) {
+    return '—';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleString('es-BO', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
 }
 
 function displayMoney(value: string | number | undefined): string {

@@ -198,6 +198,7 @@
 }
 
 .secondary-button,
+.save-button,
 .success-button {
   min-height: 42px;
   padding: 0 16px;
@@ -215,6 +216,17 @@
 
   &:hover {
     background: #dbeeff;
+  }
+}
+
+.save-button {
+  background: #267bbf;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(38, 123, 191, 0.22);
+
+  &:hover {
+    background: #1e5f94;
+    transform: translateY(-1px);
   }
 }
 
@@ -256,6 +268,7 @@
   }
 
   .secondary-button,
+  .save-button,
   .success-button {
     width: 100%;
   }

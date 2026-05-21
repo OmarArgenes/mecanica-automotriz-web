@@ -29,11 +29,14 @@
   </div>
 
   <div class="list-scroll">
-    <button
-      type="button"
+    <article
       class="order-row"
       *ngFor="let order of filteredOrders; trackBy: trackByOrderId"
+      role="button"
+      tabindex="0"
       (click)="selectOrder(order)"
+      (keydown.enter)="selectOrder(order)"
+      (keydown.space)="selectOrder(order)"
     >
       <div class="order-code">
         <strong>{{ order.orderNumber }}</strong>
@@ -58,18 +61,53 @@
       </div>
 
       <div class="order-meta">
-        <span>Ingreso: {{ order.receptionDate }}</span>
-        <span *ngIf="!isPendingList"
-          >Finalización: {{ order.completedDate || "-" }}</span
-        >
-        <span>Mecánico: {{ order.mechanicName }}</span>
+        <span>Ingreso: {{ formatReceptionDateTime(order) }}</span>
+
+        <span *ngIf="!isPendingList">
+          Finalización: {{ formatCompletedDateTime(order) }}
+        </span>
+
+        <span>Mecánico: {{ order.mechanicName || "-" }}</span>
       </div>
 
-      <div class="order-action">
-        <span>{{ isPendingList ? "Abrir orden" : "Reimprimir" }}</span>
-        <strong>›</strong>
+      <div class="order-actions">
+        <ng-container *ngIf="isPendingList; else completedActions">
+          <button
+            type="button"
+            class="action-button action-button--danger"
+            (click)="$event.stopPropagation(); deleteOrder(order)"
+          >
+            Eliminar
+          </button>
+
+          <button
+            type="button"
+            class="action-button action-button--success"
+            (click)="$event.stopPropagation(); finishOrder(order)"
+          >
+            Finalizar
+          </button>
+        </ng-container>
+
+        <ng-template #completedActions>
+          <button
+            type="button"
+            class="action-button"
+            (click)="$event.stopPropagation(); printOrder(order)"
+          >
+            Reimprimir
+          </button>
+
+          <button
+            type="button"
+            class="action-button action-button--warning"
+            (click)="$event.stopPropagation(); reopenOrder(order)"
+          >
+            Anular
+          </button>
+        </ng-template>
       </div>
-    </button>
+    </article>
 
     <div class="empty-state" *ngIf="filteredOrders.length === 0">
       <div class="empty-icon">

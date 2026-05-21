@@ -20,7 +20,9 @@ export interface WorkOrder {
   plateNumber: string;
 
   receptionDate: string;
+  receptionTime?: string;
   completedDate?: string;
+  completedAt?: string;
 
   mechanicName: string;
   problemDescription: string;
