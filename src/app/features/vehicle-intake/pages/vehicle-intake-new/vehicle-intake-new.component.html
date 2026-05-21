@@ -19,12 +19,15 @@
   </header>
 
   <form class="intake-form" [formGroup]="intakeForm" (ngSubmit)="submitForm()">
-    <section class="form-section">
+    <section class="form-section smart-search-section">
       <div class="section-header">
         <span>01</span>
         <div>
-          <h2>Búsqueda de registro</h2>
-          <p>Consulta por placa, cliente, teléfono o documento.</p>
+          <h2>Búsqueda inteligente</h2>
+          <p>
+            Busca por placa, CI/NIT, teléfono o nombre para cargar un cliente
+            existente.
+          </p>
         </div>
       </div>
 
@@ -32,11 +35,100 @@
         <input
           type="text"
           formControlName="search"
-          placeholder="Placa, cliente, teléfono o CI/NIT"
+          placeholder="Placa, CI/NIT, teléfono o nombre del cliente"
+          (keydown.enter)="searchExistingRecord(); $event.preventDefault()"
         />
 
-        <button type="button" class="button button--dark">Buscar</button>
+        <button
+          type="button"
+          class="button button--dark"
+          (click)="searchExistingRecord()"
+          [disabled]="isSearching"
+        >
+          {{ isSearching ? "Buscando..." : "Buscar" }}
+        </button>
       </div>
+
+      <p
+        *ngIf="searchMessage"
+        class="search-feedback"
+        [class.search-feedback--success]="selectedCustomerId"
+      >
+        {{ searchMessage }}
+      </p>
+
+      <section *ngIf="selectedCustomer" class="selected-record-card">
+        <div class="selected-record-card__header">
+          <div>
+            <span class="selected-record-card__eyebrow"
+              >Cliente seleccionado</span
+            >
+            <h3>{{ selectedCustomer.fullName }}</h3>
+            <p>
+              CI/NIT: {{ selectedCustomer.documentNumber || "—" }} · Tel:
+              {{ selectedCustomer.phone || "—" }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="link-action"
+            (click)="clearSmartSelection()"
+          >
+            Limpiar selección
+          </button>
+        </div>
+
+        <div class="selected-record-card__vehicle" *ngIf="selectedVehicle">
+          <span>Vehículo seleccionado</span>
+          <strong>
+            {{ selectedVehicle.plateNumber }} · {{ selectedVehicle.brand }}
+            {{ selectedVehicle.model }}
+          </strong>
+        </div>
+
+        <div class="selected-record-card__vehicle" *ngIf="!selectedVehicle">
+          <span>Vehículo pendiente</span>
+          <strong
+            >Registra o selecciona el vehículo que ingresa al taller.</strong
+          >
+        </div>
+      </section>
+
+      <section *ngIf="searchResults.length > 0" class="search-results-panel">
+        <div class="search-results-panel__header">
+          <h3>Clientes encontrados</h3>
+          <p>Selecciona el registro correcto para continuar.</p>
+        </div>
+
+        <div class="search-results-grid">
+          <article
+            *ngFor="let customer of searchResults"
+            class="search-result-card"
+          >
+            <div>
+              <h4>{{ customer.fullName }}</h4>
+              <p>
+                CI/NIT: {{ customer.documentNumber || "—" }} · Tel:
+                {{ customer.phone || "—" }}
+              </p>
+              <span>
+                {{ customer.vehicles.length }}
+                {{ customer.vehicles.length === 1 ? "vehículo" : "vehículos" }}
+                registrados
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="button button--dark"
+              (click)="selectCustomerCandidate(customer)"
+            >
+              Seleccionar
+            </button>
+          </article>
+        </div>
+      </section>
     </section>
 
     <section class="form-grid-layout">
@@ -260,6 +352,15 @@
 
         <button
           type="button"
+          class="button button--outline-dark"
+          *ngIf="selectedCustomerId"
+          (click)="registerAnotherVehicleForSameCustomer()"
+        >
+          Registrar otro vehículo para este cliente
+        </button>
+
+        <button
+          type="button"
           class="button button--light"
           (click)="resetForm()"
         >
@@ -268,6 +369,81 @@
       </div>
     </section>
   </form>
+  <div
+    class="vehicle-modal-backdrop"
+    *ngIf="vehicleSelectionCustomer"
+    (click)="closeVehicleSelectionModal()"
+  ></div>
+
+  <section class="vehicle-selection-modal" *ngIf="vehicleSelectionCustomer">
+    <header class="vehicle-selection-modal__header">
+      <div>
+        <span>Vehículos del cliente</span>
+        <h2>Seleccionar vehículo</h2>
+        <p>
+          {{ vehicleSelectionCustomer.fullName }} · CI/NIT:
+          {{ vehicleSelectionCustomer.documentNumber || "—" }} · Tel:
+          {{ vehicleSelectionCustomer.phone || "—" }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="vehicle-selection-modal__close"
+        (click)="closeVehicleSelectionModal()"
+        aria-label="Cerrar selección de vehículo"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="vehicle-selection-list">
+      <article
+        *ngFor="let vehicle of vehicleSelectionCustomer.vehicles"
+        class="vehicle-option-card"
+      >
+        <div>
+          <span class="vehicle-option-card__plate">
+            {{ vehicle.plateNumber }}
+          </span>
+
+          <h3>{{ vehicle.brand }} {{ vehicle.model }}</h3>
+
+          <p>
+            Año: {{ vehicle.year || "—" }} · Color: {{ vehicle.color || "—" }} ·
+            Km:
+            {{ vehicle.mileage || "—" }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="button button--dark"
+          (click)="selectVehicleCandidate(vehicle)"
+        >
+          Seleccionar
+        </button>
+      </article>
+    </div>
+
+    <footer class="vehicle-selection-modal__footer">
+      <button
+        type="button"
+        class="button button--primary"
+        (click)="prepareNewVehicleForSelectedCustomer()"
+      >
+        + Registrar nuevo vehículo para este cliente
+      </button>
+
+      <button
+        type="button"
+        class="button button--light"
+        (click)="closeVehicleSelectionModal()"
+      >
+        Cancelar
+      </button>
+    </footer>
+  </section>
 
   <section class="print-receipt" *ngIf="isSaved">
     <header class="receipt-header">
