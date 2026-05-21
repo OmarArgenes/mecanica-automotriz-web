@@ -176,6 +176,14 @@
           </select>
           <small *ngIf="isInvalid('arrivalState')"> Campo obligatorio. </small>
         </label>
+        <label class="field">
+          <span>Mecánico asignado</span>
+          <input
+            type="text"
+            formControlName="mechanicName"
+            placeholder="Ej. Rubén Zelaya"
+          />
+        </label>
 
         <label class="field field--full">
           <span>Problemas que presenta *</span>
@@ -187,15 +195,6 @@
           <small *ngIf="isInvalid('reportedProblems')">
             Campo obligatorio.
           </small>
-        </label>
-
-        <label class="field field--full">
-          <span>Observación inicial</span>
-          <textarea
-            rows="3"
-            formControlName="initialObservation"
-            placeholder="Observaciones visibles al momento de recibir el vehículo."
-          ></textarea>
         </label>
       </div>
     </section>
@@ -309,13 +308,10 @@
       <p><strong>Hora:</strong> {{ getValue("intakeTime") }}</p>
       <p><strong>Cómo llega:</strong> {{ getValue("arrivalMethod") }}</p>
       <p><strong>Estado de llegada:</strong> {{ getValue("arrivalState") }}</p>
+      <p><strong>Mecánico asignado:</strong> {{ getValue("mechanicName") }}</p>
       <p>
         <strong>Problemas reportados:</strong>
         {{ getValue("reportedProblems") }}
-      </p>
-      <p>
-        <strong>Observación inicial:</strong>
-        {{ getValue("initialObservation") }}
       </p>
     </section>
 

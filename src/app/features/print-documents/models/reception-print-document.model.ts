@@ -24,7 +24,7 @@ export interface ReceptionPrintDocument {
     time: string;
     arrivalMethod: string;
     arrivalState: string;
+    mechanicName: string;
     reportedProblems: string;
-    initialObservation: string;
   };
 }

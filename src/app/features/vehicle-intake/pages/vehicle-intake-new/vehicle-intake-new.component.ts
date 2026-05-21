@@ -66,8 +66,8 @@ export class VehicleIntakeNewComponent {
     intakeTime: [this.getCurrentTime(), Validators.required],
     arrivalMethod: [''],
     arrivalState: ['', Validators.required],
+    mechanicName: [''],
     reportedProblems: ['', Validators.required],
-    initialObservation: [''],
   });
 
   async submitForm(): Promise<void> {
@@ -101,8 +101,8 @@ export class VehicleIntakeNewComponent {
         intakeTime: rawValue.intakeTime ?? this.getCurrentTime(),
         arrivalMethod: rawValue.arrivalMethod ?? '',
         arrivalState: rawValue.arrivalState ?? '',
+        mechanicName: rawValue.mechanicName ?? '',
         reportedProblems: rawValue.reportedProblems ?? '',
-        initialObservation: rawValue.initialObservation ?? '',
       });
 
       this.receptionCode = result.receptionCode;
@@ -149,8 +149,8 @@ export class VehicleIntakeNewComponent {
         time: this.getValue('intakeTime'),
         arrivalMethod: this.getValue('arrivalMethod'),
         arrivalState: this.getValue('arrivalState'),
+        mechanicName: this.getValue('mechanicName'),
         reportedProblems: this.getValue('reportedProblems'),
-        initialObservation: this.getValue('initialObservation'),
       },
     });
   }
@@ -178,8 +178,8 @@ export class VehicleIntakeNewComponent {
       intakeTime: this.getCurrentTime(),
       arrivalMethod: '',
       arrivalState: '',
+      mechanicName: '',
       reportedProblems: '',
-      initialObservation: '',
     });
   }
 
