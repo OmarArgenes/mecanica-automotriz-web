@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { QuickActionsComponent } from '../../../../shared/components/quick-actions/quick-actions.component';
@@ -12,7 +12,7 @@ import { DashboardService } from '../../data-access/dashboard.service';
   templateUrl: './dashboard-home.component.html',
   styleUrl: './dashboard-home.component.scss',
 })
-export class DashboardHomeComponent {
+export class DashboardHomeComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
 
   searchTerm = '';
@@ -40,6 +40,10 @@ export class DashboardHomeComponent {
         (value) => value.toLowerCase().includes(term),
       ),
     );
+  }
+
+  ngOnInit(): void {
+    void this.refreshDashboard();
   }
 
   updateSearchTerm(event: Event): void {

@@ -72,29 +72,31 @@
         <table>
           <thead>
             <tr>
+              <th>No.</th>
               <th>Hora</th>
               <th>Placa</th>
               <th>Cliente</th>
               <th>Vehículo</th>
               <th>Estado</th>
-              <th class="text-right">Acciones</th>
             </tr>
           </thead>
 
           <tbody>
-            <tr *ngFor="let item of filteredRecentIntakes">
+            <tr *ngFor="let item of filteredRecentIntakes; let index = index">
+              <td>{{ index + 1 }}</td>
+
               <td>{{ item.time }}</td>
+
               <td>
                 <strong class="plate">{{ item.plate }}</strong>
               </td>
+
               <td>{{ item.customer }}</td>
+
               <td>{{ item.vehicle }}</td>
+
               <td>
                 <span class="status-badge">{{ item.status }}</span>
-              </td>
-              <td class="actions-cell">
-                <button type="button">Ver</button>
-                <button type="button">Imprimir</button>
               </td>
             </tr>
           </tbody>

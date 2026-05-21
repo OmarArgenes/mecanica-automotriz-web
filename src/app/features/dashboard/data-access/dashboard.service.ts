@@ -18,18 +18,23 @@ export interface DashboardRecentIntake {
   status: string;
 }
 
-interface SupabaseRecentIntakeRow {
+interface SupabaseRecentWorkOrderRow {
   id: string;
-  reception_number: string;
-  intake_date: string;
-  intake_time: string | null;
+  order_number: string;
+  reception_date: string;
+  reception_time: string | null;
   customer_name_snapshot: string;
   vehicle_plate_snapshot: string;
   vehicle_brand_snapshot: string;
   vehicle_model_snapshot: string;
-  arrival_state: string;
+  status: 'pending' | 'completed';
 }
 
+interface SupabasePendingPartsRequestRow {
+  id: string;
+  status: string;
+  parts_request_items?: { id: string }[];
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -73,27 +78,35 @@ export class DashboardService {
 
       supabase
         .from('parts_requests')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['pending', 'quoted', 'approved', 'purchased']),
-
-      supabase
-        .from('vehicle_intakes')
         .select(
           `
-          id,
-          reception_number,
-          intake_date,
-          intake_time,
-          customer_name_snapshot,
-          vehicle_plate_snapshot,
-          vehicle_brand_snapshot,
-          vehicle_model_snapshot,
-          arrival_state
-        `,
+    id,
+    status,
+    parts_request_items (
+      id
+    )
+  `,
         )
-        .order('intake_date', { ascending: false })
-        .order('intake_time', { ascending: false })
-        .limit(8),
+        .eq('status', 'pending'),
+
+      supabase
+        .from('work_orders')
+        .select(
+          `
+    id,
+    order_number,
+    reception_date,
+    reception_time,
+    customer_name_snapshot,
+    vehicle_plate_snapshot,
+    vehicle_brand_snapshot,
+    vehicle_model_snapshot,
+    status
+  `,
+        )
+        .order('reception_date', { ascending: false })
+        .order('reception_time', { ascending: false })
+        .limit(100),
     ]);
 
     const error =
@@ -108,17 +121,23 @@ export class DashboardService {
       throw new Error(error.message);
     }
 
+    const waitingPartsCount = (
+      (waitingPartsResult.data ?? []) as SupabasePendingPartsRequestRow[]
+    ).filter(
+      (request) => (request.parts_request_items ?? []).length > 0,
+    ).length;
+
     this.statsSignal.set(
       this.buildStats(
         pendingOrdersResult.count ?? 0,
         completedOrdersResult.count ?? 0,
-        waitingPartsResult.count ?? 0,
+        waitingPartsCount,
       ),
     );
 
     this.recentIntakesSignal.set(
-      ((recentIntakesResult.data ?? []) as SupabaseRecentIntakeRow[]).map(
-        (item) => this.mapRecentIntake(item),
+      ((recentIntakesResult.data ?? []) as SupabaseRecentWorkOrderRow[]).map(
+        (item) => this.mapRecentWorkOrder(item),
       ),
     );
 
@@ -152,17 +171,19 @@ export class DashboardService {
     ];
   }
 
-  private mapRecentIntake(
-    item: SupabaseRecentIntakeRow,
+  private mapRecentWorkOrder(
+    item: SupabaseRecentWorkOrderRow,
   ): DashboardRecentIntake {
     return {
       id: item.id,
-      time: item.intake_time ? item.intake_time.slice(0, 5) : item.intake_date,
+      time: item.reception_time
+        ? item.reception_time.slice(0, 5)
+        : item.reception_date,
       plate: item.vehicle_plate_snapshot,
       customer: item.customer_name_snapshot,
       vehicle:
         `${item.vehicle_brand_snapshot} ${item.vehicle_model_snapshot}`.trim(),
-      status: item.arrival_state || 'Registrado',
+      status: item.status === 'completed' ? 'Entregado' : 'Pendiente',
     };
   }
 
