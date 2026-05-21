@@ -11,6 +11,12 @@ import {
 import { FormsModule } from '@angular/forms';
 
 import { WorkOrder, WorkOrderChargeItem } from '../../models/work-order.model';
+import {
+  formatDateAndTime,
+  formatTimestamp,
+} from '../../../../shared/utils/date-time-format.util';
+
+type WorkOrderModalMode = 'view' | 'edit';
 
 @Component({
   selector: 'app-work-order-detail-modal',
@@ -21,10 +27,14 @@ import { WorkOrder, WorkOrderChargeItem } from '../../models/work-order.model';
 })
 export class WorkOrderDetailModalComponent implements OnChanges {
   @Input({ required: true }) order!: WorkOrder;
+  @Input() mode: WorkOrderModalMode = 'view';
 
   @Output() closed = new EventEmitter<void>();
   @Output() printed = new EventEmitter<WorkOrder>();
+  @Output() saved = new EventEmitter<WorkOrder>();
   @Output() finished = new EventEmitter<WorkOrder>();
+
+  workDescription = '';
 
   chargeDescription = '';
   chargeQuantity = 1;
@@ -33,7 +43,8 @@ export class WorkOrderDetailModalComponent implements OnChanges {
   editingChargeItemId: string | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['order'] && this.order) {
+    if ((changes['order'] || changes['mode']) && this.order) {
+      this.workDescription = this.order.workDescription ?? '';
       this.chargeItems = (this.order.chargeItems ?? []).map((item) => ({
         ...item,
       }));
@@ -43,6 +54,25 @@ export class WorkOrderDetailModalComponent implements OnChanges {
 
   get isPending(): boolean {
     return this.order.status === 'pending';
+  }
+
+  formatReceptionDateTime(): string {
+    return formatDateAndTime(
+      this.order.receptionDate,
+      this.order.receptionTime,
+    );
+  }
+
+  formatCompletedDateTime(): string {
+    return formatTimestamp(this.order.completedAt, this.order.completedDate);
+  }
+
+  get isEditMode(): boolean {
+    return this.mode === 'edit';
+  }
+
+  get canEditChargeItems(): boolean {
+    return this.isPending || this.isEditMode;
   }
 
   get isEditingChargeItem(): boolean {
@@ -56,7 +86,7 @@ export class WorkOrderDetailModalComponent implements OnChanges {
   get orderWithEditableValues(): WorkOrder {
     return {
       ...this.order,
-      workDescription: this.order.workDescription,
+      workDescription: this.workDescription,
       chargeItems: this.chargeItems.map((item) => ({ ...item })),
       totalAmount: this.chargeTotal,
     };
@@ -101,6 +131,23 @@ export class WorkOrderDetailModalComponent implements OnChanges {
     this.resetChargeForm();
   }
 
+  formatDateTime(value?: string): string {
+    if (!value) {
+      return '-';
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleString('es-BO', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    });
+  }
+
   editChargeItem(item: WorkOrderChargeItem): void {
     this.editingChargeItemId = item.id;
     this.chargeDescription = item.description;
@@ -126,6 +173,10 @@ export class WorkOrderDetailModalComponent implements OnChanges {
 
   print(): void {
     this.printed.emit(this.orderWithEditableValues);
+  }
+
+  save(): void {
+    this.saved.emit(this.orderWithEditableValues);
   }
 
   finish(): void {

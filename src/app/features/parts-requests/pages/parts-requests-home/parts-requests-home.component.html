@@ -47,6 +47,8 @@
       <app-part-request-history
         [requests]="selectedOrderRequests()"
         (printRequested)="printPartRequest($event)"
+        (editRequested)="openEditRequestModal($event)"
+        (deleteRequested)="deletePartRequest($event)"
       />
     </div>
   </section>
@@ -54,6 +56,7 @@
   <app-part-request-form-modal
     *ngIf="isRequestModalOpen() && selectedOrder() as order"
     [order]="order"
+    [requestToEdit]="editingRequest()"
     (closed)="closeRequestModal()"
     (saved)="savePartRequest($event)"
   />

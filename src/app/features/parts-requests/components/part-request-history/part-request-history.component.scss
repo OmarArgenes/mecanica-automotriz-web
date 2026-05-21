@@ -40,6 +40,46 @@
   font-weight: 900;
 }
 
+.history-search {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+
+  label {
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 900;
+  }
+
+  input {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #d8e1ec;
+    border-radius: 14px;
+    padding: 0 1rem;
+    color: #10233b;
+    font: inherit;
+    font-weight: 700;
+    outline: none;
+    background: #f8fafc;
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 180ms ease;
+
+    &::placeholder {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    &:focus {
+      border-color: #267bbf;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(38, 123, 191, 0.12);
+    }
+  }
+}
+
 .history-list {
   display: flex;
   flex-direction: column;
@@ -92,6 +132,23 @@
   color: #d0061b;
 }
 
+.request-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+
+  span {
+    padding: 0.38rem 0.65rem;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 0.78rem;
+    font-weight: 800;
+    border: 1px solid #e5e7eb;
+  }
+}
+
 .parts-list {
   display: flex;
   flex-direction: column;
@@ -116,15 +173,42 @@
   }
 }
 
-.print-button {
-  width: 100%;
-  padding: 0.8rem 1rem;
+.request-actions {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.65rem;
+}
+
+.print-button,
+.edit-button,
+.delete-button {
+  min-height: 42px;
+  padding: 0.75rem 1rem;
   border: 0;
   border-radius: 14px;
-  background: #001b4d;
   color: #ffffff;
   font-weight: 900;
   cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.print-button {
+  background: #001b4d;
+}
+
+.edit-button {
+  background: #267bbf;
+}
+
+.delete-button {
+  background: #d0061b;
 }
 
 .empty-state {
@@ -157,5 +241,25 @@
 
   .provider-badge {
     width: 100%;
+  }
+
+  .request-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .print-button,
+  .edit-button,
+  .delete-button {
+    width: 100%;
+  }
+
+  .parts-list {
+    padding-left: 1rem;
+
+    li strong {
+      display: block;
+      margin-left: 0;
+      margin-top: 0.15rem;
+    }
   }
 }

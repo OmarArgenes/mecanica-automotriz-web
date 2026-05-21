@@ -4,12 +4,15 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { WorkOrder } from '../../../work-orders/models/work-order.model';
 import {
+  PartRequest,
   PartRequestFormValue,
   PartRequestItem,
 } from '../../models/part-request.model';
@@ -21,8 +24,9 @@ import {
   templateUrl: './part-request-form-modal.component.html',
   styleUrl: './part-request-form-modal.component.scss',
 })
-export class PartRequestFormModalComponent {
+export class PartRequestFormModalComponent implements OnChanges {
   @Input({ required: true }) order!: WorkOrder;
+  @Input() requestToEdit: PartRequest | null = null;
 
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<PartRequestFormValue>();
@@ -37,6 +41,16 @@ export class PartRequestFormModalComponent {
 
   get isEditing(): boolean {
     return this.editingPartId !== null;
+  }
+
+  get isEditingRequest(): boolean {
+    return this.requestToEdit !== null;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['requestToEdit']) {
+      this.loadRequestToEdit();
+    }
   }
 
   addOrUpdatePart(): void {
@@ -107,6 +121,22 @@ export class PartRequestFormModalComponent {
 
   trackByPartId(_: number, part: PartRequestItem): string {
     return part.id;
+  }
+
+  private loadRequestToEdit(): void {
+    this.resetPartForm();
+
+    if (!this.requestToEdit) {
+      this.workshopProvidesParts = false;
+      this.parts = [];
+      return;
+    }
+
+    this.workshopProvidesParts = this.requestToEdit.workshopProvidesParts;
+    this.parts = this.requestToEdit.parts.map((part) => ({
+      ...part,
+      id: part.id || crypto.randomUUID(),
+    }));
   }
 
   private resetPartForm(): void {

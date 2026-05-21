@@ -25,7 +25,9 @@ interface SupabaseWorkOrderRow {
   vehicle_model_snapshot: string;
   vehicle_plate_snapshot: string;
   reception_date: string;
+  reception_time: string | null;
   completed_date: string | null;
+  completed_at: string | null;
   mechanic_name: string | null;
   problem_description: string | null;
   work_description: string | null;
@@ -65,9 +67,12 @@ export class WorkOrdersService {
         vehicle_brand_snapshot,
         vehicle_model_snapshot,
         vehicle_plate_snapshot,
-        reception_date,
-        completed_date,
-        mechanic_name,
+      reception_date,
+reception_date,
+reception_time,
+completed_date,
+completed_at,
+mechanic_name,
         problem_description,
         work_description,
         total_amount,
@@ -101,18 +106,93 @@ export class WorkOrdersService {
   }
 
   async finishWorkOrder(orderId: string): Promise<void> {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
 
     const { error } = await supabase
       .from('work_orders')
       .update({
         status: 'completed',
         completed_date: today,
+        completed_at: now.toISOString(),
       })
       .eq('id', orderId);
 
     if (error) {
       throw new Error(error.message);
+    }
+
+    await this.loadWorkOrders();
+  }
+
+  async reopenWorkOrder(orderId: string): Promise<void> {
+    const { error } = await supabase
+      .from('work_orders')
+      .update({
+        status: 'pending',
+        completed_date: null,
+        completed_at: null,
+      })
+      .eq('id', orderId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await this.loadWorkOrders();
+  }
+
+  async deleteWorkOrder(orderId: string): Promise<void> {
+    const { data: relatedPartRequests, error: findPartRequestsError } =
+      await supabase
+        .from('parts_requests')
+        .select('id')
+        .eq('work_order_id', orderId);
+
+    if (findPartRequestsError) {
+      throw new Error(findPartRequestsError.message);
+    }
+
+    const partRequestIds = (relatedPartRequests ?? []).map(
+      (request) => request.id,
+    );
+
+    if (partRequestIds.length > 0) {
+      const { error: deletePartItemsError } = await supabase
+        .from('parts_request_items')
+        .delete()
+        .in('parts_request_id', partRequestIds);
+
+      if (deletePartItemsError) {
+        throw new Error(deletePartItemsError.message);
+      }
+
+      const { error: deletePartRequestsError } = await supabase
+        .from('parts_requests')
+        .delete()
+        .in('id', partRequestIds);
+
+      if (deletePartRequestsError) {
+        throw new Error(deletePartRequestsError.message);
+      }
+    }
+
+    const { error: deleteChargeItemsError } = await supabase
+      .from('work_order_charge_items')
+      .delete()
+      .eq('work_order_id', orderId);
+
+    if (deleteChargeItemsError) {
+      throw new Error(deleteChargeItemsError.message);
+    }
+
+    const { error: deleteOrderError } = await supabase
+      .from('work_orders')
+      .delete()
+      .eq('id', orderId);
+
+    if (deleteOrderError) {
+      throw new Error(deleteOrderError.message);
     }
 
     await this.loadWorkOrders();
@@ -185,7 +265,9 @@ export class WorkOrdersService {
       vehicleModel: order.vehicle_model_snapshot,
       plateNumber: order.vehicle_plate_snapshot,
       receptionDate: order.reception_date,
+      receptionTime: order.reception_time ?? undefined,
       completedDate: order.completed_date ?? undefined,
+      completedAt: order.completed_at ?? undefined,
       mechanicName: order.mechanic_name ?? '',
       problemDescription: order.problem_description ?? '',
       workDescription: order.work_description ?? '',

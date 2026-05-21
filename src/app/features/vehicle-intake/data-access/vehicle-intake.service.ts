@@ -20,6 +20,7 @@ export interface VehicleIntakeFormValue {
   intakeTime: string;
   arrivalMethod?: string | null;
   arrivalState: string;
+  mechanicName?: string | null;
   reportedProblems: string;
   initialObservation?: string | null;
 }
@@ -66,7 +67,8 @@ export class VehicleIntakeService {
         vehicle_model_snapshot: formValue.model.trim(),
 
         reception_date: formValue.intakeDate,
-        mechanic_name: '',
+        reception_time: formValue.intakeTime || null,
+        mechanic_name: this.trimToNull(formValue.mechanicName),
         problem_description: formValue.reportedProblems.trim(),
         work_description: this.buildInitialWorkDescription(formValue),
         status: 'pending',

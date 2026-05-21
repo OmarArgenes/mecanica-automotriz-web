@@ -1,0 +1,15 @@
+  feature/customer-vehicles-relation[m
+  feature/customers-module[m
+  feature/dashboard-workshop-background[m
+  feature/internal-layout-menu[m
+  feature/login-session-user-menu[m
+  feature/print-documents[m
+  feature/spare-parts-improvements[m
+  feature/spare-parts-module[m
+  feature/supabase-database-setup[m
+  feature/vehicle-intake-page[m
+  feature/vehicles-module[m
+  feature/work-order-final-charge-detail[m
+* [32mfeature/work-orders-management-actions[m
+  feature/work-orders-page[m
+  main[m

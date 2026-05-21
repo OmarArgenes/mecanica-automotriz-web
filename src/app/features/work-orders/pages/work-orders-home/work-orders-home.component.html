@@ -38,6 +38,8 @@
     emptyMessage="No hay órdenes pendientes."
     [orders]="pendingOrders()"
     (orderSelected)="openOrder($event)"
+    (deleteRequested)="deleteOrder($event)"
+    (finishRequested)="finishOrder($event)"
   />
 
   <app-work-order-list
@@ -47,13 +49,17 @@
     emptyMessage="No hay órdenes finalizadas."
     [orders]="completedOrders()"
     (orderSelected)="openOrder($event)"
+    (printRequested)="printOrder($event)"
+    (reopenRequested)="reopenOrder($event)"
   />
 
   <app-work-order-detail-modal
     *ngIf="selectedOrder() as order"
     [order]="order"
+    [mode]="modalMode()"
     (closed)="closeModal()"
     (printed)="printOrder($event)"
+    (saved)="saveOrder($event)"
     (finished)="finishOrder($event)"
   />
 </section>

@@ -2,8 +2,19 @@
   <section class="modal-card" (click)="$event.stopPropagation()">
     <header class="modal-header">
       <div>
-        <span class="eyebrow">Registro de solicitud</span>
-        <h2>Solicitar repuestos</h2>
+        <span class="eyebrow">
+          {{
+            isEditingRequest ? "Edición de solicitud" : "Registro de solicitud"
+          }}
+        </span>
+
+        <h2>
+          {{
+            isEditingRequest
+              ? "Editar solicitud de repuestos"
+              : "Solicitar repuestos"
+          }}
+        </h2>
       </div>
 
       <button type="button" class="close-button" (click)="close()">×</button>
@@ -99,10 +110,9 @@
       <ng-template #emptyParts>
         <div class="empty-parts">
           <strong>No agregaste repuestos todavía</strong>
-          <span
-            >Escribe el nombre de la pieza, define cantidad y presiona
-            Enter.</span
-          >
+          <span>
+            Escribe el nombre de la pieza, define cantidad y presiona Enter.
+          </span>
         </div>
       </ng-template>
     </section>
@@ -113,7 +123,7 @@
       </button>
 
       <button type="button" class="save-button" (click)="save()">
-        Guardar solicitud
+        {{ isEditingRequest ? "Guardar cambios" : "Guardar solicitud" }}
       </button>
     </footer>
   </section>

@@ -60,11 +60,11 @@ export function buildReceptionReceiptTemplate(
             ['Hora', document.intake.time],
             ['Cómo llega', document.intake.arrivalMethod],
             ['Estado de llegada', document.intake.arrivalState],
+            ['Mecánico asignado', document.intake.mechanicName],
           ])}
 
           ${textBlock('Problemas reportados por el cliente', document.intake.reportedProblems)}
-          ${textBlock('Observación inicial de recepción', document.intake.initialObservation)}
-
+     
           <section class="signature-grid">
             <div>Firma recepción</div>
             <div>Firma cliente</div>

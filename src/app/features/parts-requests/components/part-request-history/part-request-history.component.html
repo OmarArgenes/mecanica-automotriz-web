@@ -5,13 +5,29 @@
       <h2>Historial de repuestos</h2>
     </div>
 
-    <span class="counter">{{ requests.length }}</span>
+    <span class="counter">{{ filteredRequests.length }}</span>
   </header>
 
-  <div class="history-list" *ngIf="requests.length > 0; else emptyHistory">
+  <div class="history-search" *ngIf="requests.length > 0">
+    <label for="partRequestSearch">Buscar solicitud</label>
+
+    <input
+      id="partRequestSearch"
+      name="partRequestSearch"
+      type="search"
+      [(ngModel)]="searchTerm"
+      placeholder="Buscar por solicitud, cliente, placa, vehículo o repuesto..."
+      autocomplete="off"
+    />
+  </div>
+
+  <div
+    class="history-list"
+    *ngIf="filteredRequests.length > 0; else emptyHistory"
+  >
     <article
       class="request-card"
-      *ngFor="let request of requests; trackBy: trackByRequestId"
+      *ngFor="let request of filteredRequests; trackBy: trackByRequestId"
     >
       <div class="request-header">
         <div>
@@ -29,6 +45,12 @@
         </span>
       </div>
 
+      <div class="request-meta">
+        <span>{{ request.customerName }}</span>
+        <span>{{ request.vehicleBrand }} {{ request.vehicleModel }}</span>
+        <span>Placa: {{ request.plateNumber }}</span>
+      </div>
+
       <ol class="parts-list">
         <li *ngFor="let part of request.parts; trackBy: trackByPartId">
           <span>{{ part.name }}</span>
@@ -36,20 +58,51 @@
         </li>
       </ol>
 
-      <button
-        type="button"
-        class="print-button"
-        (click)="printRequest(request)"
-      >
-        Imprimir
-      </button>
+      <div class="request-actions">
+        <button
+          type="button"
+          class="print-button"
+          (click)="printRequest(request)"
+        >
+          Imprimir
+        </button>
+
+        <button
+          type="button"
+          class="edit-button"
+          (click)="editRequest(request)"
+        >
+          Editar
+        </button>
+
+        <button
+          type="button"
+          class="delete-button"
+          (click)="deleteRequest(request)"
+        >
+          Eliminar
+        </button>
+      </div>
     </article>
   </div>
 
   <ng-template #emptyHistory>
     <div class="empty-state">
-      <strong>No hay solicitudes registradas</strong>
-      <span>Cuando guardes una solicitud aparecerá aquí.</span>
+      <strong>
+        {{
+          hasSearchTerm
+            ? "No se encontraron solicitudes"
+            : "No hay solicitudes registradas"
+        }}
+      </strong>
+
+      <span>
+        {{
+          hasSearchTerm
+            ? "Prueba con otro número de solicitud, cliente, placa o repuesto."
+            : "Cuando guardes una solicitud aparecerá aquí."
+        }}
+      </span>
     </div>
   </ng-template>
 </section>

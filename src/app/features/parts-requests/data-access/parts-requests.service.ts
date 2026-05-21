@@ -181,6 +181,78 @@ export class PartsRequestsService {
     await this.loadPartRequests();
   }
 
+  async updatePartRequest(
+    requestId: string,
+    workshopProvidesParts: boolean,
+    parts: PartRequestItem[],
+  ): Promise<void> {
+    const { error: requestError } = await supabase
+      .from('parts_requests')
+      .update({
+        workshop_provides_parts: workshopProvidesParts,
+      })
+      .eq('id', requestId);
+
+    if (requestError) {
+      throw new Error(requestError.message);
+    }
+
+    const { error: deleteItemsError } = await supabase
+      .from('parts_request_items')
+      .delete()
+      .eq('parts_request_id', requestId);
+
+    if (deleteItemsError) {
+      throw new Error(deleteItemsError.message);
+    }
+
+    const partRows = parts
+      .filter((part) => part.name.trim() && part.quantity > 0)
+      .map((part, index) => ({
+        parts_request_id: requestId,
+        part_name: part.name.trim(),
+        quantity: part.quantity,
+        unit_price: part.unitPrice ?? 0,
+        supplier_name: part.supplierName?.trim() || null,
+        notes: part.notes?.trim() || null,
+        sort_order: index + 1,
+      }));
+
+    if (partRows.length > 0) {
+      const { error: insertItemsError } = await supabase
+        .from('parts_request_items')
+        .insert(partRows);
+
+      if (insertItemsError) {
+        throw new Error(insertItemsError.message);
+      }
+    }
+
+    await this.loadPartRequests();
+  }
+
+  async deletePartRequest(requestId: string): Promise<void> {
+    const { error: deleteItemsError } = await supabase
+      .from('parts_request_items')
+      .delete()
+      .eq('parts_request_id', requestId);
+
+    if (deleteItemsError) {
+      throw new Error(deleteItemsError.message);
+    }
+
+    const { error: deleteRequestError } = await supabase
+      .from('parts_requests')
+      .delete()
+      .eq('id', requestId);
+
+    if (deleteRequestError) {
+      throw new Error(deleteRequestError.message);
+    }
+
+    await this.loadPartRequests();
+  }
+
   getRequestsByWorkOrder(workOrderId: string): PartRequest[] {
     return this.partRequestsSignal().filter(
       (request) => request.workOrderId === workOrderId,
