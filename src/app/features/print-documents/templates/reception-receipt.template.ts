@@ -94,15 +94,15 @@ function buildPrintStyles(): string {
         box-sizing: border-box;
       }
 
-    @page {
-  size: letter portrait;
+@page {
+  size: letter landscape;
   margin: 0;
 }
 
 html,
 body {
-  width: 21.59cm;
-  height: 27.94cm;
+  width: 27.94cm;
+  min-height: 21.59cm;
   margin: 0;
   padding: 0;
 }
@@ -116,21 +116,19 @@ body {
 }
 
 .print-document {
-  width: 21.59cm;
-  height: 13.97cm;
-  padding: 6mm;
-  overflow: hidden;
+  width: 27.94cm;
+  min-height: 21.59cm;
+  padding: 7mm 8mm;
   background: #ffffff;
 }
-
-      .document-header {
-        display: grid;
-        grid-template-columns: 140px 1fr 170px;
-        align-items: center;
-        gap: 14px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #001b4e;
-      }
+     .document-header {
+  display: grid;
+  grid-template-columns: 185px 1fr 190px;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #001b4e;
+}
 
       .logo-box {
         display: flex;
@@ -138,11 +136,11 @@ body {
         justify-content: center;
       }
 
-      .logo-box img {
-        max-width: 132px;
-        max-height: 58px;
-        object-fit: contain;
-      }
+  .logo-box img {
+  max-width: 175px;
+  max-height: 78px;
+  object-fit: contain;
+}
 
       .company-info h1 {
         margin: 0;
@@ -262,21 +260,21 @@ body {
         line-height: 1.35;
       }
 
-      .signature-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 70px;
-        margin-top: 20px;
-      }
+   .signature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 90px;
+  margin-top: 36px;
+}
 
-      .signature-grid div {
-        padding-top: 7px;
-        border-top: 1px solid #111827;
-        text-align: center;
-        color: #374151;
-        font-size: 9px;
-        font-weight: 800;
-      }
+    .signature-grid div {
+  padding-top: 9px;
+  border-top: 1px solid #111827;
+  text-align: center;
+  color: #374151;
+  font-size: 9px;
+  font-weight: 800;
+}
 
       .legal-note {
         margin: 7px 0 0;
