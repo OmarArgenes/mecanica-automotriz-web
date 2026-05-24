@@ -8,7 +8,7 @@ export function buildReceptionReceiptTemplate(
     <html lang="es">
       <head>
         <meta charset="UTF-8" />
-        <title>Constancia ${safe(document.receptionCode)}</title>
+        <title>Constancia ${safe(document.orderCode)}</title>
         ${buildPrintStyles()}
       </head>
 
@@ -29,7 +29,7 @@ export function buildReceptionReceiptTemplate(
 
             <div class="document-meta">
               <strong>CONSTANCIA DE RECEPCIÓN</strong>
-              <span>${safe(document.receptionCode)}</span>
+              <span>${safe(document.orderCode)}</span>
               <em>Vehículo recibido</em>
             </div>
           </header>
@@ -54,21 +54,37 @@ export function buildReceptionReceiptTemplate(
             ['Orden generada', document.orderCode],
           ])}
 
-          ${sectionTitle('Ingreso al taller')}
-          ${dataGrid([
-            ['Fecha', document.intake.date],
-            ['Hora', document.intake.time],
-            ['Cómo llega', document.intake.arrivalMethod],
-            ['Estado de llegada', document.intake.arrivalState],
-            ['Mecánico asignado', document.intake.mechanicName],
-          ])}
+       ${sectionTitle('Ingreso al taller')}
+${dataGrid([
+  ['Fecha', document.intake.date],
+  ['Hora', document.intake.time],
+  ['Cómo llega', document.intake.arrivalMethod],
+  ['Estado de llegada', document.intake.arrivalState],
+  ['Conductor', document.intake.driverName],
+  ['Mecánico asignado', document.intake.mechanicName],
+])}
 
-          ${textBlock('Problemas reportados por el cliente', document.intake.reportedProblems)}
-     
-          <section class="signature-grid">
-            <div>Firma recepción</div>
-            <div>Firma cliente</div>
-          </section>
+${sectionTitle('Estado visual e inventario')}
+${dataGrid([
+  ['Estado visual', vehicleConditionSummary(document)],
+  ['Combustible', document.inspection.fuelLevel],
+  ['Llanta delantera derecha', document.inspection.tireCondition.frontRight],
+  ['Llanta delantera izquierda', document.inspection.tireCondition.frontLeft],
+  ['Llanta trasera derecha', document.inspection.tireCondition.rearRight],
+  ['Llanta trasera izquierda', document.inspection.tireCondition.rearLeft],
+])}
+
+${textBlock('Inventario recibido', inventorySummary(document))}
+${textBlock('Observaciones de inventario', document.inspection.inventoryObservations)}
+
+${textBlock('Problemas reportados por el cliente', document.intake.reportedProblems)}
+
+${authorizationNote()}
+
+<section class="signature-grid">
+  <div>Firma recepción</div>
+  <div>Firma cliente</div>
+</section>
 
           <p class="legal-note">
             El cliente declara que los datos registrados corresponden al estado inicial del vehículo al momento de su ingreso al taller.
@@ -260,11 +276,36 @@ body {
         line-height: 1.35;
       }
 
-   .signature-grid {
+      .authorization-note {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border: 1px solid #d7dde8;
+  border-left: 4px solid #001b4e;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.authorization-note p {
+  margin: 0 0 3px;
+  color: #374151;
+  font-size: 8.4px;
+  line-height: 1.28;
+}
+
+.authorization-note p:last-child {
+  margin-bottom: 0;
+}
+
+.authorization-note strong {
+  color: #001b4e;
+  font-weight: 900;
+}
+
+.signature-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 90px;
-  margin-top: 36px;
+  margin-top: 34px;
 }
 
     .signature-grid div {
@@ -284,6 +325,27 @@ body {
         text-align: center;
       }
     </style>
+  `;
+}
+
+function authorizationNote(): string {
+  return `
+    <section class="authorization-note">
+      <p>
+        <strong>Autorización de trabajo:</strong>
+        El cliente autoriza a Z-CANEDO a realizar los trabajos indicados en el detalle y a utilizar los insumos necesarios para la reparación.
+      </p>
+
+      <p>
+        <strong>Prueba técnica:</strong>
+        El cliente autoriza el manejo del vehículo únicamente con fines de prueba técnica.
+      </p>
+
+      <p>
+        <strong>Retiro del vehículo:</strong>
+        El cliente se compromete a retirar el vehículo una vez concluidas las reparaciones. En caso contrario, se cobrará Bs. 10 por día por concepto de parqueo.
+      </p>
+    </section>
   `;
 }
 
@@ -315,6 +377,47 @@ function textBlock(label: string, value: string | number | undefined): string {
       <p>${display(value)}</p>
     </section>
   `;
+}
+
+function vehicleConditionSummary(document: ReceptionPrintDocument): string {
+  const condition = document.inspection.vehicleCondition;
+
+  const selectedConditions = [
+    condition.dented ? 'Abollado' : '',
+    condition.scratched ? 'Raspadura' : '',
+    condition.broken ? 'Roto' : '',
+    condition.noDamage ? 'No tiene daños visibles' : '',
+    condition.other ? `Otros: ${condition.other}` : '',
+  ].filter(Boolean);
+
+  return selectedConditions.length > 0 ? selectedConditions.join(', ') : '—';
+}
+
+function inventorySummary(document: ReceptionPrintDocument): string {
+  const inventory = document.inspection.vehicleInventory;
+
+  const inventoryLabels: Array<
+    [keyof ReceptionPrintDocument['inspection']['vehicleInventory'], string]
+  > = [
+    ['spareTire', 'Llanta de auxilio'],
+    ['wheelWrench', 'Llave de ruedas'],
+    ['jack', 'Gata'],
+    ['fireExtinguisher', 'Extinguidor'],
+    ['hubcaps', 'Tapacubos'],
+    ['mirrors', 'Espejos'],
+    ['antenna', 'Antena'],
+    ['radio', 'Radio'],
+    ['tools', 'Herramientas'],
+    ['floorMats', 'Pisos'],
+    ['fogLights', 'Halógenos'],
+    ['other', 'Otros'],
+  ];
+
+  const selectedItems = inventoryLabels
+    .filter(([key]) => inventory[key])
+    .map(([, label]) => label);
+
+  return selectedItems.length > 0 ? selectedItems.join(', ') : '—';
 }
 
 function display(value: string | number | undefined): string {

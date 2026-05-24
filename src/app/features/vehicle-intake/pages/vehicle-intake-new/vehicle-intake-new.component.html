@@ -225,10 +225,140 @@
         </div>
       </section>
     </section>
+    <section class="form-section inspection-section">
+      <div class="section-header">
+        <span>04</span>
+        <div>
+          <h2>Estado visual e inventario</h2>
+          <p>
+            Registra la condición física, llantas, combustible e inventario del
+            vehículo al momento de ingresar al taller.
+          </p>
+        </div>
+      </div>
+
+      <div class="inspection-layout">
+        <article class="inspection-card">
+          <div class="inspection-card__header">
+            <h3>Estado visual</h3>
+            <p>Marca las condiciones visibles del vehículo.</p>
+          </div>
+
+          <div class="chip-grid chip-grid--compact">
+            <button
+              *ngFor="let option of vehicleConditionOptions"
+              type="button"
+              class="select-chip"
+              [class.select-chip--active]="
+                isVehicleConditionSelected(option.key)
+              "
+              (click)="toggleVehicleCondition(option.key)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+
+          <label
+            class="field field--full inspection-other-field"
+            formGroupName="vehicleCondition"
+          >
+            <span>Otros daños u observaciones visuales</span>
+            <input
+              type="text"
+              formControlName="other"
+              placeholder="Ej. Faro rajado, parachoques suelto, pintura dañada..."
+            />
+          </label>
+        </article>
+
+        <article class="inspection-card inspection-card--fuel">
+          <div class="inspection-card__header">
+            <h3>Nivel de combustible</h3>
+            <p>Selecciona el nivel aproximado registrado al ingreso.</p>
+          </div>
+
+          <div class="fuel-level-selector">
+            <button
+              *ngFor="let level of fuelLevelOptions"
+              type="button"
+              class="fuel-chip"
+              [class.fuel-chip--active]="isFuelLevelSelected(level)"
+              (click)="selectFuelLevel(level)"
+            >
+              {{ level }}
+            </button>
+          </div>
+
+          <div class="fuel-scale">
+            <span>E</span>
+            <div></div>
+            <span>F</span>
+          </div>
+        </article>
+      </div>
+
+      <article class="inspection-card tire-card">
+        <div class="inspection-card__header">
+          <h3>Estado de llantas</h3>
+          <p>Selecciona el estado de cada llanta: Bueno, Regular o Malo.</p>
+        </div>
+
+        <div class="tire-condition-grid">
+          <div *ngFor="let tire of tirePositions" class="tire-condition-row">
+            <span>{{ tire.label }}</span>
+
+            <div class="tire-status-options">
+              <button
+                *ngFor="let status of tireStatusOptions"
+                type="button"
+                class="status-chip"
+                [class.status-chip--active]="
+                  isTireConditionSelected(tire.key, status)
+                "
+                (click)="selectTireCondition(tire.key, status)"
+              >
+                {{ status }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="inspection-card inventory-card">
+        <div class="inspection-card__header">
+          <h3>Inventario del vehículo</h3>
+          <p>Marca los accesorios u objetos recibidos junto con el vehículo.</p>
+        </div>
+
+        <div class="inventory-grid">
+          <button
+            *ngFor="let item of inventoryOptions"
+            type="button"
+            class="inventory-chip"
+            [class.inventory-chip--active]="isInventorySelected(item.key)"
+            (click)="toggleInventoryItem(item.key)"
+          >
+            <span class="inventory-chip__check">
+              {{ isInventorySelected(item.key) ? "✓" : "" }}
+            </span>
+            {{ item.label }}
+          </button>
+        </div>
+
+        <label class="field field--full inventory-observations-field">
+          <span>Observaciones de inventario</span>
+          <textarea
+            rows="3"
+            formControlName="inventoryObservations"
+            placeholder="Ej. Radio sin frente, falta una tapa, herramientas incompletas..."
+          ></textarea>
+        </label>
+      </article>
+    </section>
 
     <section class="form-section">
       <div class="section-header">
-        <span>04</span>
+        <span>05</span>
         <div>
           <h2>Ingreso al taller</h2>
           <p>Condición de llegada y problema reportado.</p>
@@ -269,6 +399,15 @@
           <small *ngIf="isInvalid('arrivalState')"> Campo obligatorio. </small>
         </label>
         <label class="field">
+          <span>Conductor</span>
+          <input
+            type="text"
+            formControlName="driverName"
+            placeholder="Nombre de quien entrega el vehículo"
+          />
+        </label>
+
+        <label class="field">
           <span>Mecánico asignado</span>
           <input
             type="text"
@@ -292,16 +431,22 @@
     </section>
 
     <footer class="form-footer" *ngIf="!isSaved">
-      <a routerLink="/vehicle-intake" class="button button--light">
-        Cancelar
-      </a>
+      <button type="button" class="button button--light" (click)="resetForm()">
+        Limpiar formulario
+      </button>
 
       <button
         type="submit"
         class="button button--primary"
         [disabled]="isSaving"
       >
-        {{ isSaving ? "Guardando..." : "Guardar ingreso" }}
+        {{
+          isSaving
+            ? "Guardando..."
+            : editingIntakeId
+              ? "Actualizar ingreso"
+              : "Guardar ingreso"
+        }}
       </button>
     </footer>
 
@@ -317,12 +462,7 @@
 
       <div class="saved-summary">
         <div>
-          <span>Recepción</span>
-          <strong>{{ receptionCode }}</strong>
-        </div>
-
-        <div>
-          <span>Orden</span>
+          <span>OT</span>
           <strong>{{ orderCode }}</strong>
         </div>
 
@@ -334,6 +474,11 @@
         <div>
           <span>Cliente</span>
           <strong>{{ getValue("customerFullName") }}</strong>
+        </div>
+
+        <div>
+          <span>Vehículo</span>
+          <strong>{{ getValue("brand") }} {{ getValue("model") }}</strong>
         </div>
       </div>
 
@@ -369,6 +514,134 @@
       </div>
     </section>
   </form>
+
+  <section class="received-intakes-section">
+    <header class="received-intakes-header">
+      <div>
+        <p class="eyebrow eyebrow--dark">Recepción</p>
+        <h2>Vehículos recepcionados</h2>
+        <p>
+          Lista de ingresos registrados. Usa el buscador para encontrar por OT,
+          cliente, teléfono, vehículo, placa, fecha o cualquier dato
+          relacionado.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="button button--outline-dark"
+        (click)="loadReceivedIntakes()"
+        [disabled]="isLoadingIntakes"
+      >
+        {{ isLoadingIntakes ? "Actualizando..." : "Actualizar lista" }}
+      </button>
+    </header>
+
+    <div class="received-search-panel">
+      <div class="received-search-control">
+        <span>⌕</span>
+        <input
+          type="text"
+          [value]="receivedSearchTerm"
+          (input)="updateReceivedSearchTerm($event)"
+          placeholder="Buscar por OT, cliente, teléfono, vehículo, placa, fecha..."
+        />
+      </div>
+
+      <small>
+        Mostrando {{ filteredReceivedIntakes.length }} de
+        {{ receivedIntakes.length }} registros
+      </small>
+    </div>
+
+    <p *ngIf="listError" class="search-feedback">
+      {{ listError }}
+    </p>
+
+    <div class="received-table-card">
+      <div class="received-table received-table--head">
+        <span>No.</span>
+        <span>OT</span>
+        <span>Fecha/Hora</span>
+        <span>Cliente</span>
+        <span>Vehículo</span>
+        <span>Placa</span>
+        <span>Acciones</span>
+      </div>
+
+      <article
+        *ngFor="let item of filteredReceivedIntakes; let index = index"
+        class="received-table received-table--row"
+        [class.received-table--editing]="editingIntakeId === item.id"
+      >
+        <div>
+          <strong>{{ index + 1 }}</strong>
+        </div>
+
+        <div class="received-code">
+          <strong>{{ item.orderCode || "Sin OT" }}</strong>
+        </div>
+
+        <div>
+          <strong>{{ formatReceivedIntakeDateTime(item) }}</strong>
+        </div>
+
+        <div>
+          <strong>{{ item.customer.fullName }}</strong>
+          <small>{{ item.customer.phone || "Sin teléfono" }}</small>
+        </div>
+
+        <div>
+          <strong>{{ item.vehicle.brand }} {{ item.vehicle.model }}</strong>
+          <small>{{ item.vehicle.color || "Sin color" }}</small>
+        </div>
+
+        <div>
+          <span class="plate-pill">{{ item.vehicle.plate }}</span>
+        </div>
+
+        <div class="received-actions">
+          <button
+            type="button"
+            class="action-button"
+            (click)="editReceivedIntake(item)"
+          >
+            Editar
+          </button>
+
+          <button
+            type="button"
+            class="action-button"
+            (click)="printReceivedIntake(item)"
+          >
+            Imprimir
+          </button>
+
+          <button
+            type="button"
+            class="action-button action-button--danger"
+            (click)="deleteReceivedIntake(item)"
+          >
+            Eliminar
+          </button>
+        </div>
+      </article>
+
+      <div
+        *ngIf="!isLoadingIntakes && filteredReceivedIntakes.length === 0"
+        class="received-empty-state"
+      >
+        <strong>No se encontraron vehículos recepcionados.</strong>
+        <span>Prueba con otra OT, cliente, placa, teléfono o fecha.</span>
+      </div>
+
+      <div *ngIf="isLoadingIntakes" class="received-empty-state">
+        <strong>Cargando recepciones...</strong>
+        <span>Estamos actualizando la lista de vehículos ingresados.</span>
+      </div>
+    </div>
+  </section>
+
   <div
     class="vehicle-modal-backdrop"
     *ngIf="vehicleSelectionCustomer"
