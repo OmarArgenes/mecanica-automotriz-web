@@ -934,6 +934,31 @@
 .inventory-chip--active .inventory-chip__check {
   background: rgba(255, 255, 255, 0.26);
 }
+.inventory-chip--active,
+.inventory-chip--active:hover,
+.inventory-chip--active:focus,
+.inventory-chip--active:focus-visible,
+.inventory-chip--active:active {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--caned-navy), var(--caned-blue));
+  border-color: rgba(0, 91, 170, 0.8);
+  box-shadow: 0 14px 26px rgba(0, 27, 78, 0.16);
+  transform: none;
+}
+
+.inventory-chip--active .inventory-chip__check,
+.inventory-chip--active:hover .inventory-chip__check,
+.inventory-chip--active:focus .inventory-chip__check,
+.inventory-chip--active:focus-visible .inventory-chip__check,
+.inventory-chip--active:active .inventory-chip__check {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.inventory-chip--active,
+.inventory-chip--active * {
+  -webkit-text-fill-color: #ffffff;
+}
 
 .received-intakes-section {
   display: grid;
