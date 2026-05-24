@@ -10,13 +10,24 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { WorkOrder, WorkOrderChargeItem } from '../../models/work-order.model';
+import {
+  WorkOrder,
+  WorkOrderChargeItem,
+  WorkOrderChargeItemType,
+} from '../../models/work-order.model';
 import {
   formatDateAndTime,
   formatTimestamp,
 } from '../../../../shared/utils/date-time-format.util';
 
 type WorkOrderModalMode = 'view' | 'edit';
+
+interface ChargeItemDraft {
+  description: string;
+  quantity: number;
+  amount: number | null;
+  editingItemId: string | null;
+}
 
 @Component({
   selector: 'app-work-order-detail-modal',
@@ -35,25 +46,80 @@ export class WorkOrderDetailModalComponent implements OnChanges {
   @Output() finished = new EventEmitter<WorkOrder>();
 
   workDescription = '';
+  recommendations = '';
 
-  chargeDescription = '';
-  chargeQuantity = 1;
-  chargeAmount: number | null = null;
   chargeItems: WorkOrderChargeItem[] = [];
-  editingChargeItemId: string | null = null;
+
+  serviceDraft: ChargeItemDraft = this.createEmptyChargeItemDraft();
+  supplyDraft: ChargeItemDraft = this.createEmptyChargeItemDraft();
 
   ngOnChanges(changes: SimpleChanges): void {
     if ((changes['order'] || changes['mode']) && this.order) {
       this.workDescription = this.order.workDescription ?? '';
+      this.recommendations = this.order.recommendations ?? '';
+
       this.chargeItems = (this.order.chargeItems ?? []).map((item) => ({
         ...item,
+        itemType: item.itemType === 'supply' ? 'supply' : 'service',
       }));
-      this.resetChargeForm();
+
+      this.resetAllChargeForms();
     }
   }
 
   get isPending(): boolean {
     return this.order.status === 'pending';
+  }
+
+  get isEditMode(): boolean {
+    return this.mode === 'edit';
+  }
+
+  get canEditChargeItems(): boolean {
+    return this.isPending || this.isEditMode;
+  }
+
+  get serviceChargeItems(): WorkOrderChargeItem[] {
+    return this.chargeItems.filter((item) => item.itemType === 'service');
+  }
+
+  get supplyChargeItems(): WorkOrderChargeItem[] {
+    return this.chargeItems.filter((item) => item.itemType === 'supply');
+  }
+
+  get serviceTotal(): number {
+    return this.calculateItemsTotal(this.serviceChargeItems);
+  }
+
+  get supplyTotal(): number {
+    return this.calculateItemsTotal(this.supplyChargeItems);
+  }
+
+  get chargeTotal(): number {
+    return this.serviceTotal + this.supplyTotal;
+  }
+
+  get isEditingServiceItem(): boolean {
+    return this.serviceDraft.editingItemId !== null;
+  }
+
+  get isEditingSupplyItem(): boolean {
+    return this.supplyDraft.editingItemId !== null;
+  }
+
+  get orderWithEditableValues(): WorkOrder {
+    return {
+      ...this.order,
+      workDescription: this.workDescription,
+      recommendations: this.recommendations,
+      chargeItems: this.chargeItems.map((item, index) => ({
+        ...item,
+        subtotal:
+          this.normalizeQuantity(item.quantity) *
+          this.normalizeAmount(item.amount),
+      })),
+      totalAmount: this.chargeTotal,
+    };
   }
 
   formatReceptionDateTime(): string {
@@ -67,35 +133,12 @@ export class WorkOrderDetailModalComponent implements OnChanges {
     return formatTimestamp(this.order.completedAt, this.order.completedDate);
   }
 
-  get isEditMode(): boolean {
-    return this.mode === 'edit';
-  }
+  addOrUpdateChargeItem(itemType: WorkOrderChargeItemType): void {
+    const draft = this.getDraftByType(itemType);
 
-  get canEditChargeItems(): boolean {
-    return this.isPending || this.isEditMode;
-  }
-
-  get isEditingChargeItem(): boolean {
-    return this.editingChargeItemId !== null;
-  }
-
-  get chargeTotal(): number {
-    return this.chargeItems.reduce((total, item) => total + item.subtotal, 0);
-  }
-
-  get orderWithEditableValues(): WorkOrder {
-    return {
-      ...this.order,
-      workDescription: this.workDescription,
-      chargeItems: this.chargeItems.map((item) => ({ ...item })),
-      totalAmount: this.chargeTotal,
-    };
-  }
-
-  addOrUpdateChargeItem(): void {
-    const cleanDescription = this.chargeDescription.trim();
-    const cleanQuantity = this.normalizeQuantity(this.chargeQuantity);
-    const cleanAmount = this.normalizeAmount(this.chargeAmount);
+    const cleanDescription = draft.description.trim();
+    const cleanQuantity = this.normalizeQuantity(draft.quantity);
+    const cleanAmount = this.normalizeAmount(draft.amount);
 
     if (!cleanDescription || cleanAmount <= 0) {
       return;
@@ -103,11 +146,12 @@ export class WorkOrderDetailModalComponent implements OnChanges {
 
     const subtotal = cleanQuantity * cleanAmount;
 
-    if (this.editingChargeItemId) {
+    if (draft.editingItemId) {
       this.chargeItems = this.chargeItems.map((item) =>
-        item.id === this.editingChargeItemId
+        item.id === draft.editingItemId
           ? {
               ...item,
+              itemType,
               description: cleanDescription,
               quantity: cleanQuantity,
               amount: cleanAmount,
@@ -120,6 +164,7 @@ export class WorkOrderDetailModalComponent implements OnChanges {
         ...this.chargeItems,
         {
           id: crypto.randomUUID(),
+          itemType,
           description: cleanDescription,
           quantity: cleanQuantity,
           amount: cleanAmount,
@@ -128,43 +173,33 @@ export class WorkOrderDetailModalComponent implements OnChanges {
       ];
     }
 
-    this.resetChargeForm();
-  }
-
-  formatDateTime(value?: string): string {
-    if (!value) {
-      return '-';
-    }
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return value;
-    }
-
-    return date.toLocaleString('es-BO', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    });
+    this.resetChargeForm(itemType);
   }
 
   editChargeItem(item: WorkOrderChargeItem): void {
-    this.editingChargeItemId = item.id;
-    this.chargeDescription = item.description;
-    this.chargeQuantity = item.quantity;
-    this.chargeAmount = item.amount;
+    const itemType = item.itemType === 'supply' ? 'supply' : 'service';
+    const draft = this.getDraftByType(itemType);
+
+    draft.editingItemId = item.id;
+    draft.description = item.description;
+    draft.quantity = item.quantity;
+    draft.amount = item.amount;
   }
 
   deleteChargeItem(itemId: string): void {
     this.chargeItems = this.chargeItems.filter((item) => item.id !== itemId);
 
-    if (this.editingChargeItemId === itemId) {
-      this.resetChargeForm();
+    if (this.serviceDraft.editingItemId === itemId) {
+      this.resetChargeForm('service');
+    }
+
+    if (this.supplyDraft.editingItemId === itemId) {
+      this.resetChargeForm('supply');
     }
   }
 
-  cancelChargeEdit(): void {
-    this.resetChargeForm();
+  cancelChargeEdit(itemType: WorkOrderChargeItemType): void {
+    this.resetChargeForm(itemType);
   }
 
   close(): void {
@@ -180,9 +215,9 @@ export class WorkOrderDetailModalComponent implements OnChanges {
   }
 
   finish(): void {
-    if (this.isPending && this.chargeItems.length === 0) {
+    if (this.chargeItems.length === 0) {
       window.alert(
-        'Debes registrar al menos un detalle de cobro antes de finalizar la orden.',
+        'Debes registrar al menos un servicio, trabajo, repuesto o insumo antes de finalizar la orden.',
       );
       return;
     }
@@ -194,11 +229,37 @@ export class WorkOrderDetailModalComponent implements OnChanges {
     return item.id;
   }
 
-  private resetChargeForm(): void {
-    this.chargeDescription = '';
-    this.chargeQuantity = 1;
-    this.chargeAmount = null;
-    this.editingChargeItemId = null;
+  private getDraftByType(itemType: WorkOrderChargeItemType): ChargeItemDraft {
+    return itemType === 'supply' ? this.supplyDraft : this.serviceDraft;
+  }
+
+  private resetAllChargeForms(): void {
+    this.resetChargeForm('service');
+    this.resetChargeForm('supply');
+  }
+
+  private resetChargeForm(itemType: WorkOrderChargeItemType): void {
+    const emptyDraft = this.createEmptyChargeItemDraft();
+
+    if (itemType === 'supply') {
+      this.supplyDraft = emptyDraft;
+      return;
+    }
+
+    this.serviceDraft = emptyDraft;
+  }
+
+  private createEmptyChargeItemDraft(): ChargeItemDraft {
+    return {
+      description: '',
+      quantity: 1,
+      amount: null,
+      editingItemId: null,
+    };
+  }
+
+  private calculateItemsTotal(items: WorkOrderChargeItem[]): number {
+    return items.reduce((total, item) => total + Number(item.subtotal ?? 0), 0);
   }
 
   private normalizeQuantity(value: number): number {

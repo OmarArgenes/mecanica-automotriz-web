@@ -4,6 +4,7 @@ import { supabase } from '../../../core/supabase/supabase.client';
 import {
   WorkOrder,
   WorkOrderChargeItem,
+  WorkOrderChargeItemType,
   WorkOrderStatus,
 } from '../models/work-order.model';
 
@@ -14,6 +15,7 @@ interface SupabaseChargeItemRow {
   unit_price: number;
   subtotal: number;
   sort_order: number;
+  item_type: WorkOrderChargeItemType | null;
 }
 
 interface SupabaseWorkOrderRow {
@@ -31,6 +33,7 @@ interface SupabaseWorkOrderRow {
   mechanic_name: string | null;
   problem_description: string | null;
   work_description: string | null;
+  recommendations: string | null;
   total_amount: number;
   status: WorkOrderStatus;
   work_order_charge_items?: SupabaseChargeItemRow[];
@@ -74,7 +77,8 @@ completed_date,
 completed_at,
 mechanic_name,
         problem_description,
-        work_description,
+             work_description,
+        recommendations,
         total_amount,
         status,
         work_order_charge_items (
@@ -83,7 +87,8 @@ mechanic_name,
           quantity,
           unit_price,
           subtotal,
-          sort_order
+          sort_order,
+          item_type
         )
       `,
       )
@@ -207,11 +212,14 @@ mechanic_name,
     workDescription: string,
     _totalAmount: number,
     chargeItems: WorkOrderChargeItem[] = [],
+    recommendations = '',
   ): Promise<void> {
     const { error: orderError } = await supabase
       .from('work_orders')
       .update({
         work_description: workDescription.trim(),
+        recommendations: recommendations.trim(),
+        total_amount: this.calculateChargeItemsTotal(chargeItems),
       })
       .eq('id', orderId);
 
@@ -235,6 +243,7 @@ mechanic_name,
         description: item.description.trim(),
         quantity: item.quantity,
         unit_price: item.amount,
+        item_type: item.itemType,
         sort_order: index + 1,
       }));
 
@@ -251,10 +260,36 @@ mechanic_name,
     await this.loadWorkOrders();
   }
 
+  private calculateChargeItemsTotal(
+    chargeItems: WorkOrderChargeItem[],
+  ): number {
+    return chargeItems.reduce(
+      (total, item) =>
+        total + this.normalizeChargeSubtotal(item.quantity, item.amount),
+      0,
+    );
+  }
+
+  private normalizeChargeSubtotal(quantity: number, amount: number): number {
+    const cleanQuantity = Number(quantity);
+    const cleanAmount = Number(amount);
+
+    if (
+      !Number.isFinite(cleanQuantity) ||
+      !Number.isFinite(cleanAmount) ||
+      cleanQuantity < 1 ||
+      cleanAmount < 0
+    ) {
+      return 0;
+    }
+
+    return Math.floor(cleanQuantity) * cleanAmount;
+  }
+
   private mapWorkOrderFromDatabase(order: SupabaseWorkOrderRow): WorkOrder {
-    const chargeItems = (order.work_order_charge_items ?? [])
-      .map((item) => this.mapChargeItemFromDatabase(item))
-      .sort((a, b) => a.description.localeCompare(b.description));
+    const chargeItems = [...(order.work_order_charge_items ?? [])]
+      .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
+      .map((item) => this.mapChargeItemFromDatabase(item));
 
     return {
       id: order.id,
@@ -271,6 +306,7 @@ mechanic_name,
       mechanicName: order.mechanic_name ?? '',
       problemDescription: order.problem_description ?? '',
       workDescription: order.work_description ?? '',
+      recommendations: order.recommendations ?? '',
       chargeItems,
       totalAmount: Number(order.total_amount ?? 0),
       status: order.status,
@@ -282,6 +318,7 @@ mechanic_name,
   ): WorkOrderChargeItem {
     return {
       id: item.id,
+      itemType: item.item_type === 'supply' ? 'supply' : 'service',
       description: item.description,
       quantity: Number(item.quantity),
       amount: Number(item.unit_price),

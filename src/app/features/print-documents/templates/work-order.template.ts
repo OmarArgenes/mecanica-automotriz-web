@@ -29,23 +29,31 @@ export function buildWorkOrderTemplate(
       <body>
         <main class="print-document">
           <header class="document-header">
-            <div class="logo-box">
-              <img src="/images/caned-logo.png" alt="CANED Tecnología Automotriz" />
-            </div>
+          <div class="company-info">
+  <h1>Z-CANEDO TECNOLOGÍA AUTOMOTRIZ</h1>
+  <p>Diagnóstico, servicio y reparación automotriz</p>
+  <p>
+    <strong>Tel.:</strong> 4281133 ·
+    <strong>Cel.:</strong> 72222827 ·
+    <strong>Responsable:</strong> Rubén Zelaya
+  </p>
+  <p><strong>Email:</strong> zcanedo3@hotmail.com</p>
+  <p>
+    <strong>Dirección:</strong> Calle F. Veracini entre Calle M. E, Norberto
+    Galdo Ballivian y, Cochabamba, Bolivia
+  </p>
+</div>
 
-            <div class="company-info">
-              <h1>CANEDO Tecnología Automotriz</h1>
-              <p>Diagnóstico, servicio y reparación automotriz</p>
-              <p><strong>Tel.:</strong> 4281133 · <strong>Cel.:</strong> 72222827 · <strong>Responsable:</strong> Rubén Zelaya</p>
-              <p><strong>Email:</strong> zcanedo3@hotmai.com</p>
-              <p><strong>Dirección:</strong> Calle F. Veracini entre Calle M. E, Norberto Galdo Ballivian y, Cochabamba, Bolivia</p>
-            </div>
+<div class="logo-box">
+  <img src="/images/caned-logo.png" alt="Z-CANEDO Tecnología Automotriz" />
+</div>
 
             <div class="document-meta">
               <strong>${safe(documentTitle)}</strong>
               <span>${safe(document.orderNumber)}</span>
               <em>${safe(statusLabel)}</em>
             </div>
+
           </header>
 
           ${sectionTitle('Datos del cliente')}
@@ -75,14 +83,16 @@ ${dataGrid([
   ],
 ])}
 
-          ${textBlock('Problema reportado', document.problemDescription)}
-         
-          ${chargeDetailTable(document)}
+       ${textBlock('Problema reportado', document.problemDescription)}
 
-          <section class="total-box">
-            <span>${safe(totalLabel)}</span>
-            <strong>Bs ${displayMoney(document.totalAmount)}</strong>
-          </section>
+
+${chargeDetailTable(document, 'service')}
+
+${chargeDetailTable(document, 'supply')}
+
+${textBlock('Recomendaciones técnicas', document.recommendations)}
+
+${totalsSummary(document, totalLabel)}
 
           <section class="signature-grid">
             <div>Firma cliente</div>
@@ -117,107 +127,126 @@ function buildPrintStyles(isCompleted: boolean): string {
         box-sizing: border-box;
       }
 
-   @page {
-  size: letter landscape;
-  margin: 0;
+@page {
+  size: letter portrait;
+  margin: 8mm;
 }
 
 html,
 body {
-  width: 27.94cm;
-  min-height: 21.59cm;
+  width: auto;
+  min-height: auto;
   margin: 0;
   padding: 0;
 }
 
-      body {
-        color: #111827;
-        background: #ffffff;
-        font-family: Arial, Helvetica, sans-serif;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
+body {
+  color: #111827;
+  background: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
 
-   .print-document {
-  width: 27.94cm;
-  min-height: 21.59cm;
-  padding: 7mm 8mm;
+.print-document {
+  width: 100%;
+  max-width: 19.2cm;
+  min-height: 13.8cm;
+  height: auto;
+  margin: 0 auto;
+  padding: 0;
   background: #ffffff;
 }
 
-    .document-header {
+.document-header {
   display: grid;
-  grid-template-columns: 185px 1fr 190px;
+  grid-template-columns: minmax(0, 1fr) 155px 185px;
   align-items: center;
-  gap: 16px;
-  padding-bottom: 10px;
+  gap: 12px;
+  padding: 8px 0 10px;
   border-bottom: 2px solid #001b4e;
 }
 
-      .logo-box {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+.company-info {
+  min-width: 0;
+}
 
-  .logo-box img {
-  max-width: 175px;
-  max-height: 78px;
+.company-info h1 {
+  margin: 0;
+  color: #001b4e;
+  font-size: 13.5px;
+  line-height: 1.1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.company-info p {
+  margin: 2px 0 0;
+  color: #4b5563;
+  font-size: 7.8px;
+  line-height: 1.25;
+}
+
+.company-info strong {
+  color: #001b4e;
+  font-weight: 900;
+}
+
+.logo-box img {
+  max-width: 250px;
+  max-height: 75px;
+    border-radius: 10px;
   object-fit: contain;
 }
 
-      .company-info h1 {
-        margin: 0;
-        color: #001b4e;
-        font-size: 16px;
-        line-height: 1.1;
-        font-weight: 900;
-        text-transform: uppercase;
-      }
-
-      .company-info p {
-        margin: 2px 0 0;
-        color: #4b5563;
-        font-size: 8.2px;
-        line-height: 1.25;
-      }
 
       .company-info strong {
         color: #001b4e;
         font-weight: 900;
       }
 
-      .document-meta {
-        text-align: right;
-      }
+   .document-meta {
+  text-align: right;
+  align-self: stretch;
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  padding: 8px 10px;
+  border-radius: 14px;
 
-      .document-meta strong {
-        display: block;
-        color: #001b4e;
-        font-size: 11px;
-        line-height: 1.2;
-        font-weight: 900;
-      }
+}
 
-      .document-meta span {
-        display: block;
-        margin-top: 4px;
-        color: #111827;
-        font-size: 16px;
-        font-weight: 900;
-      }
+.document-meta strong {
+  display: block;
+  max-width: 120px;
+  color: #001b4e;
+  font-size: 9px;
+  line-height: 1.15;
+  font-weight: 900;
+  text-transform: uppercase;
+}
 
-      .document-meta em {
-        display: inline-block;
-        margin-top: 5px;
-        padding: 4px 9px;
-        border-radius: 999px;
-        color: ${statusTextColor};
-        background: ${statusBackground};
-        font-size: 8px;
-        font-style: normal;
-        font-weight: 900;
-      }
+.document-meta span {
+  display: block;
+  margin-top: 5px;
+  color: #001b4e;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.document-meta em {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #075985;
+  background: #e0f2fe;
+  font-size: 7.5px;
+  font-style: normal;
+  font-weight: 900;
+}
 
       .section-title {
         margin: 9px 0 5px;
@@ -228,11 +257,11 @@ body {
         letter-spacing: 0.04em;
       }
 
-      .data-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 5px;
-      }
+     .data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
 
       .data-item {
         min-height: 34px;
@@ -356,11 +385,71 @@ body {
         font-weight: 900;
       }
 
+      .totals-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.totals-summary div {
+  padding: 7px 9px;
+  border: 1px solid #d7dde8;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.totals-summary span {
+  display: block;
+  margin-bottom: 3px;
+  color: #6b7280;
+  font-size: 7.5px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.totals-summary strong {
+  display: block;
+  color: #001b4e;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.totals-summary__grand {
+  background: #001b4e !important;
+  border-color: #001b4e !important;
+}
+
+.totals-summary__grand span,
+.totals-summary__grand strong {
+  color: #ffffff !important;
+}
+
+.totals-summary__grand strong {
+  font-size: 14px;
+}
+
+.document-header,
+.data-item,
+.text-block,
+.totals-summary,
+.signature-grid,
+.legal-note {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.charge-table {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+
   .signature-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 90px;
-  margin-top: 36px;
+  margin-top: 34px;
 }
 
       .signature-grid div {
@@ -413,16 +502,31 @@ function textBlock(label: string, value: string | number | undefined): string {
   `;
 }
 
-function chargeDetailTable(document: WorkOrderPrintDocument): string {
-  const chargeItems = document.chargeItems ?? [];
+function chargeDetailTable(
+  document: WorkOrderPrintDocument,
+  itemType: 'service' | 'supply',
+): string {
+  const title =
+    itemType === 'service'
+      ? 'Servicios y trabajos realizados'
+      : 'Repuestos e insumos utilizados';
+
+  const emptyMessage =
+    itemType === 'service'
+      ? 'Sin servicios o trabajos registrados.'
+      : 'Sin repuestos o insumos registrados.';
+
+  const chargeItems = (document.chargeItems ?? []).filter(
+    (item) => item.itemType === itemType,
+  );
 
   if (chargeItems.length === 0) {
     return `
-      ${sectionTitle('Detalle de cobro final')}
+      ${sectionTitle(title)}
       <table class="charge-table">
         <tbody>
           <tr>
-            <td>Sin detalle de cobro registrado.</td>
+            <td>${safe(emptyMessage)}</td>
           </tr>
         </tbody>
       </table>
@@ -430,7 +534,7 @@ function chargeDetailTable(document: WorkOrderPrintDocument): string {
   }
 
   return `
-    ${sectionTitle('Detalle de cobro final')}
+    ${sectionTitle(title)}
     <table class="charge-table">
       <thead>
         <tr>
@@ -458,6 +562,30 @@ function chargeDetailTable(document: WorkOrderPrintDocument): string {
           .join('')}
       </tbody>
     </table>
+  `;
+}
+
+function totalsSummary(
+  document: WorkOrderPrintDocument,
+  totalLabel: string,
+): string {
+  return `
+    <section class="totals-summary">
+      <div>
+        <span>Total servicios/trabajos</span>
+        <strong>Bs ${displayMoney(document.serviceTotal)}</strong>
+      </div>
+
+      <div>
+        <span>Total repuestos/insumos</span>
+        <strong>Bs ${displayMoney(document.supplyTotal)}</strong>
+      </div>
+
+      <div class="totals-summary__grand">
+        <span>${safe(totalLabel)}</span>
+        <strong>Bs ${displayMoney(document.totalAmount)}</strong>
+      </div>
+    </section>
   `;
 }
 

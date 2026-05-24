@@ -75,6 +75,7 @@ export class WorkOrdersHomeComponent {
         order.workDescription,
         order.totalAmount,
         order.chargeItems ?? [],
+        order.recommendations,
       );
 
       this.closeModal();
@@ -123,7 +124,7 @@ export class WorkOrdersHomeComponent {
 
     if (chargeItems.length === 0) {
       window.alert(
-        'Debes registrar al menos un detalle de cobro antes de finalizar la orden.',
+        'Debes registrar al menos un servicio, trabajo, repuesto o insumo antes de finalizar la orden.',
       );
       return;
     }
@@ -142,6 +143,7 @@ export class WorkOrdersHomeComponent {
         order.workDescription,
         order.totalAmount,
         chargeItems,
+        order.recommendations,
       );
 
       await this.workOrdersService.finishWorkOrder(order.id);
@@ -155,6 +157,16 @@ export class WorkOrdersHomeComponent {
 
   async printOrder(order: WorkOrder): Promise<void> {
     try {
+      const chargeItems = order.chargeItems ?? [];
+
+      const serviceTotal = chargeItems
+        .filter((item) => item.itemType === 'service')
+        .reduce((total, item) => total + Number(item.subtotal ?? 0), 0);
+
+      const supplyTotal = chargeItems
+        .filter((item) => item.itemType === 'supply')
+        .reduce((total, item) => total + Number(item.subtotal ?? 0), 0);
+
       this.printDocumentsService.printWorkOrder({
         orderNumber: order.orderNumber,
         status: order.status,
@@ -180,8 +192,11 @@ export class WorkOrdersHomeComponent {
         mechanicName: order.mechanicName,
         problemDescription: order.problemDescription,
         workDescription: order.workDescription,
-        chargeItems: order.chargeItems ?? [],
-        totalAmount: order.totalAmount,
+        recommendations: order.recommendations,
+        chargeItems,
+        serviceTotal,
+        supplyTotal,
+        totalAmount: serviceTotal + supplyTotal,
       });
     } catch (error) {
       console.error(error);
