@@ -151,6 +151,7 @@ export class CustomersService {
     }
 
     await this.syncCustomerVehicles(customerId, formValue.vehicles ?? []);
+    await this.syncCustomerSnapshots(customerId, formValue);
     await this.loadCustomers();
   }
 
@@ -201,6 +202,7 @@ export class CustomersService {
       throw new Error(error.message);
     }
 
+    await this.syncVehicleSnapshots(vehicleId, vehicleValue);
     await this.loadCustomers();
   }
 
@@ -261,6 +263,7 @@ export class CustomersService {
           throw new Error(error.message);
         }
 
+        await this.syncVehicleSnapshots(vehicle.id, vehicle);
         continue;
       }
 
@@ -285,6 +288,105 @@ export class CustomersService {
       if (error) {
         throw new Error(error.message);
       }
+    }
+  }
+
+  private async syncCustomerSnapshots(
+    customerId: string,
+    formValue: CustomerFormValue,
+  ): Promise<void> {
+    const fullName = formValue.fullName.trim();
+    const phone = formValue.phone.trim();
+    const documentNumber = this.trimToNull(formValue.documentNumber);
+    const address = this.trimToNull(formValue.address);
+
+    const { error: workOrdersError } = await supabase
+      .from('work_orders')
+      .update({
+        customer_name_snapshot: fullName,
+        customer_phone_snapshot: phone,
+      })
+      .eq('customer_id', customerId);
+
+    if (workOrdersError) {
+      throw new Error(workOrdersError.message);
+    }
+
+    const { error: intakesError } = await supabase
+      .from('vehicle_intakes')
+      .update({
+        customer_name_snapshot: fullName,
+        customer_phone_snapshot: phone,
+        customer_document_snapshot: documentNumber,
+        customer_address_snapshot: address,
+      })
+      .eq('customer_id', customerId);
+
+    if (intakesError) {
+      throw new Error(intakesError.message);
+    }
+
+    const { error: partsRequestsError } = await supabase
+      .from('parts_requests')
+      .update({
+        customer_name_snapshot: fullName,
+        customer_phone_snapshot: phone,
+      })
+      .eq('customer_id', customerId);
+
+    if (partsRequestsError) {
+      throw new Error(partsRequestsError.message);
+    }
+  }
+
+  private async syncVehicleSnapshots(
+    vehicleId: string,
+    vehicleValue: CustomerVehicleFormValue,
+  ): Promise<void> {
+    const plateNumber = this.normalizePlate(vehicleValue.plateNumber);
+    const brand = vehicleValue.brand?.trim() || 'Sin marca';
+    const model = vehicleValue.model?.trim() || 'Sin modelo';
+
+    const { error: workOrdersError } = await supabase
+      .from('work_orders')
+      .update({
+        vehicle_plate_snapshot: plateNumber,
+        vehicle_brand_snapshot: brand,
+        vehicle_model_snapshot: model,
+      })
+      .eq('vehicle_id', vehicleId);
+
+    if (workOrdersError) {
+      throw new Error(workOrdersError.message);
+    }
+
+    const { error: intakesError } = await supabase
+      .from('vehicle_intakes')
+      .update({
+        vehicle_plate_snapshot: plateNumber,
+        vehicle_brand_snapshot: brand,
+        vehicle_model_snapshot: model,
+        vehicle_year_snapshot: vehicleValue.year ?? null,
+        vehicle_color_snapshot: this.trimToNull(vehicleValue.color),
+        vehicle_mileage_snapshot: vehicleValue.mileage ?? null,
+      })
+      .eq('vehicle_id', vehicleId);
+
+    if (intakesError) {
+      throw new Error(intakesError.message);
+    }
+
+    const { error: partsRequestsError } = await supabase
+      .from('parts_requests')
+      .update({
+        vehicle_plate_snapshot: plateNumber,
+        vehicle_brand_snapshot: brand,
+        vehicle_model_snapshot: model,
+      })
+      .eq('vehicle_id', vehicleId);
+
+    if (partsRequestsError) {
+      throw new Error(partsRequestsError.message);
     }
   }
 
