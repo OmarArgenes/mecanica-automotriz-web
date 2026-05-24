@@ -1,7 +1,10 @@
 export type WorkOrderPrintStatus = 'pending' | 'completed';
 
+export type WorkOrderPrintChargeItemType = 'service' | 'supply';
+
 export interface WorkOrderPrintChargeItem {
   id: string;
+  itemType: WorkOrderPrintChargeItemType;
   description: string;
   quantity: number;
   amount: number;
@@ -33,6 +36,10 @@ export interface WorkOrderPrintDocument {
   mechanicName: string;
   problemDescription: string;
   workDescription: string;
+  recommendations: string;
+
   chargeItems?: WorkOrderPrintChargeItem[];
+  serviceTotal: number;
+  supplyTotal: number;
   totalAmount: number;
 }

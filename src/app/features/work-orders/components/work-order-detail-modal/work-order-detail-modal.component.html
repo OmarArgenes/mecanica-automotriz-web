@@ -80,125 +80,290 @@
         <p>{{ order.problemDescription }}</p>
       </section>
 
-      <section class="charge-panel">
-        <header class="charge-header">
+      <section class="charge-panel charge-panel--split">
+        <header class="charge-header charge-header--main">
           <div>
-            <span>Detalle de cobro final</span>
-            <h3>Servicios, trabajos o repuestos cobrados</h3>
+            <span>Detalle final de la orden</span>
+            <h3>Servicios, repuestos, recomendaciones y total general</h3>
           </div>
 
           <strong>Bs {{ chargeTotal }}</strong>
         </header>
 
-        <form
-          *ngIf="canEditChargeItems"
-          class="charge-form"
-          (ngSubmit)="addOrUpdateChargeItem()"
-        >
-          <div class="charge-form-group charge-form-group--description">
-            <label for="chargeDescription">Detalle</label>
-            <input
-              id="chargeDescription"
-              name="chargeDescription"
-              type="text"
-              [(ngModel)]="chargeDescription"
-              placeholder="Ej. Cambio de bujía y presionar Enter..."
-              autocomplete="off"
-            />
-          </div>
-
-          <div class="charge-form-group">
-            <label for="chargeQuantity">Cantidad</label>
-            <input
-              id="chargeQuantity"
-              name="chargeQuantity"
-              type="number"
-              min="1"
-              step="1"
-              [(ngModel)]="chargeQuantity"
-            />
-          </div>
-
-          <div class="charge-form-group">
-            <label for="chargeAmount">Monto Bs</label>
-            <input
-              id="chargeAmount"
-              name="chargeAmount"
-              type="number"
-              min="0"
-              step="0.01"
-              [(ngModel)]="chargeAmount"
-              placeholder="0"
-            />
-          </div>
-
-          <button type="submit" class="charge-add-button">
-            {{ isEditingChargeItem ? "Actualizar" : "Agregar" }}
-          </button>
-
-          <button
-            *ngIf="isEditingChargeItem"
-            type="button"
-            class="charge-cancel-button"
-            (click)="cancelChargeEdit()"
-          >
-            Cancelar
-          </button>
-        </form>
-
-        <ol
-          class="charge-list"
-          *ngIf="chargeItems.length > 0; else emptyCharges"
-        >
-          <li
-            *ngFor="
-              let item of chargeItems;
-              let index = index;
-              trackBy: trackByChargeItemId
-            "
-          >
-            <div class="charge-item-main">
-              <span class="charge-item-number">{{ index + 1 }}.</span>
-
+        <div class="charge-breakdown-grid">
+          <article class="charge-category-card charge-category-card--service">
+            <header class="charge-category-header">
               <div>
-                <strong>{{ item.description }}</strong>
-                <span>
-                  Cantidad: {{ item.quantity }} · Monto: Bs {{ item.amount }}
-                </span>
+                <span>Mano de obra</span>
+                <h4>Servicios y trabajos realizados</h4>
               </div>
-            </div>
 
-            <strong class="charge-item-subtotal">Bs {{ item.subtotal }}</strong>
+              <strong>Bs {{ serviceTotal }}</strong>
+            </header>
 
-            <div class="charge-item-actions" *ngIf="canEditChargeItems">
-              <button type="button" (click)="editChargeItem(item)">
-                Editar
+            <form
+              *ngIf="canEditChargeItems"
+              class="charge-form charge-form--category"
+              (ngSubmit)="addOrUpdateChargeItem('service')"
+            >
+              <div class="charge-form-group charge-form-group--description">
+                <label for="serviceDescription">Detalle</label>
+                <input
+                  id="serviceDescription"
+                  name="serviceDescription"
+                  type="text"
+                  [(ngModel)]="serviceDraft.description"
+                  placeholder="Ej. Diagnóstico, cambio de aceite, reparación..."
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="charge-form-group">
+                <label for="serviceQuantity">Cantidad</label>
+                <input
+                  id="serviceQuantity"
+                  name="serviceQuantity"
+                  type="number"
+                  min="1"
+                  step="1"
+                  [(ngModel)]="serviceDraft.quantity"
+                />
+              </div>
+
+              <div class="charge-form-group">
+                <label for="serviceAmount">Monto Bs</label>
+                <input
+                  id="serviceAmount"
+                  name="serviceAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [(ngModel)]="serviceDraft.amount"
+                  placeholder="0"
+                />
+              </div>
+
+              <button type="submit" class="charge-add-button">
+                {{ isEditingServiceItem ? "Actualizar" : "Agregar" }}
               </button>
 
               <button
+                *ngIf="isEditingServiceItem"
                 type="button"
-                class="danger"
-                (click)="deleteChargeItem(item.id)"
+                class="charge-cancel-button"
+                (click)="cancelChargeEdit('service')"
               >
-                Eliminar
+                Cancelar
               </button>
-            </div>
-          </li>
-        </ol>
+            </form>
 
-        <ng-template #emptyCharges>
-          <div class="empty-charges">
-            <strong>No agregaste cobros todavía</strong>
-            <span>
-              Escribe el detalle, deja la cantidad en 1 o cámbiala, coloca el
-              monto y presiona Enter.
-            </span>
+            <ol
+              class="charge-list charge-list--category"
+              *ngIf="serviceChargeItems.length > 0; else emptyServices"
+            >
+              <li
+                *ngFor="
+                  let item of serviceChargeItems;
+                  let index = index;
+                  trackBy: trackByChargeItemId
+                "
+              >
+                <div class="charge-item-main">
+                  <span class="charge-item-number">{{ index + 1 }}.</span>
+
+                  <div>
+                    <strong>{{ item.description }}</strong>
+                    <span>
+                      Cantidad: {{ item.quantity }} · Monto: Bs
+                      {{ item.amount }}
+                    </span>
+                  </div>
+                </div>
+
+                <strong class="charge-item-subtotal"
+                  >Bs {{ item.subtotal }}</strong
+                >
+
+                <div class="charge-item-actions" *ngIf="canEditChargeItems">
+                  <button type="button" (click)="editChargeItem(item)">
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="danger"
+                    (click)="deleteChargeItem(item.id)"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            </ol>
+
+            <ng-template #emptyServices>
+              <div class="empty-charges empty-charges--compact">
+                <strong>No hay servicios registrados.</strong>
+                <span>Agrega trabajos realizados antes de finalizar.</span>
+              </div>
+            </ng-template>
+
+            <footer class="category-total">
+              <span>Total servicios/trabajos</span>
+              <strong>Bs {{ serviceTotal }}</strong>
+            </footer>
+          </article>
+
+          <article class="charge-category-card charge-category-card--supply">
+            <header class="charge-category-header">
+              <div>
+                <span>Repuestos e insumos</span>
+                <h4>Repuestos e insumos utilizados</h4>
+              </div>
+
+              <strong>Bs {{ supplyTotal }}</strong>
+            </header>
+
+            <form
+              *ngIf="canEditChargeItems"
+              class="charge-form charge-form--category"
+              (ngSubmit)="addOrUpdateChargeItem('supply')"
+            >
+              <div class="charge-form-group charge-form-group--description">
+                <label for="supplyDescription">Detalle</label>
+                <input
+                  id="supplyDescription"
+                  name="supplyDescription"
+                  type="text"
+                  [(ngModel)]="supplyDraft.description"
+                  placeholder="Ej. Filtro, aceite, bujía, líquido de freno..."
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="charge-form-group">
+                <label for="supplyQuantity">Cantidad</label>
+                <input
+                  id="supplyQuantity"
+                  name="supplyQuantity"
+                  type="number"
+                  min="1"
+                  step="1"
+                  [(ngModel)]="supplyDraft.quantity"
+                />
+              </div>
+
+              <div class="charge-form-group">
+                <label for="supplyAmount">Monto Bs</label>
+                <input
+                  id="supplyAmount"
+                  name="supplyAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [(ngModel)]="supplyDraft.amount"
+                  placeholder="0"
+                />
+              </div>
+
+              <button type="submit" class="charge-add-button">
+                {{ isEditingSupplyItem ? "Actualizar" : "Agregar" }}
+              </button>
+
+              <button
+                *ngIf="isEditingSupplyItem"
+                type="button"
+                class="charge-cancel-button"
+                (click)="cancelChargeEdit('supply')"
+              >
+                Cancelar
+              </button>
+            </form>
+
+            <ol
+              class="charge-list charge-list--category"
+              *ngIf="supplyChargeItems.length > 0; else emptySupplies"
+            >
+              <li
+                *ngFor="
+                  let item of supplyChargeItems;
+                  let index = index;
+                  trackBy: trackByChargeItemId
+                "
+              >
+                <div class="charge-item-main">
+                  <span class="charge-item-number">{{ index + 1 }}.</span>
+
+                  <div>
+                    <strong>{{ item.description }}</strong>
+                    <span>
+                      Cantidad: {{ item.quantity }} · Monto: Bs
+                      {{ item.amount }}
+                    </span>
+                  </div>
+                </div>
+
+                <strong class="charge-item-subtotal"
+                  >Bs {{ item.subtotal }}</strong
+                >
+
+                <div class="charge-item-actions" *ngIf="canEditChargeItems">
+                  <button type="button" (click)="editChargeItem(item)">
+                    Editar
+                  </button>
+
+                  <button
+                    type="button"
+                    class="danger"
+                    (click)="deleteChargeItem(item.id)"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            </ol>
+
+            <ng-template #emptySupplies>
+              <div class="empty-charges empty-charges--compact">
+                <strong>No hay repuestos o insumos registrados.</strong>
+                <span>Agrega los materiales utilizados si corresponde.</span>
+              </div>
+            </ng-template>
+
+            <footer class="category-total">
+              <span>Total repuestos/insumos</span>
+              <strong>Bs {{ supplyTotal }}</strong>
+            </footer>
+          </article>
+        </div>
+
+        <section class="recommendation-panel">
+          <label for="recommendations">Recomendaciones técnicas</label>
+
+          <textarea
+            id="recommendations"
+            name="recommendations"
+            rows="3"
+            [(ngModel)]="recommendations"
+            [readonly]="!canEditChargeItems"
+            placeholder="Ej. Próximo mantenimiento en 5.000 km, revisar frenos, cambiar correa..."
+          ></textarea>
+        </section>
+
+        <footer class="charge-total charge-total--grand">
+          <div>
+            <span>Total servicios/trabajos</span>
+            <strong>Bs {{ serviceTotal }}</strong>
           </div>
-        </ng-template>
 
-        <footer class="charge-total">
-          <span>Total final</span>
-          <strong>Bs {{ chargeTotal }}</strong>
+          <div>
+            <span>Total repuestos/insumos</span>
+            <strong>Bs {{ supplyTotal }}</strong>
+          </div>
+
+          <div class="grand-total-box">
+            <span>Total general</span>
+            <strong>Bs {{ chargeTotal }}</strong>
+          </div>
         </footer>
       </section>
     </div>

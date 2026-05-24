@@ -19,17 +19,24 @@ export function buildPartRequestTemplate(
       <body>
         <main class="print-document">
           <header class="document-header">
-            <div class="logo-box">
-              <img src="/images/caned-logo.png" alt="CANED Tecnología Automotriz" />
-            </div>
+           <div class="company-info">
+  <h1>Z-CANEDO TECNOLOGÍA AUTOMOTRIZ</h1>
+  <p>Diagnóstico, servicio y reparación automotriz</p>
+  <p>
+    <strong>Tel.:</strong> 4281133 ·
+    <strong>Cel.:</strong> 72222827 ·
+    <strong>Responsable:</strong> Rubén Zelaya
+  </p>
+  <p><strong>Email:</strong> zcanedo3@hotmail.com</p>
+  <p>
+    <strong>Dirección:</strong> Calle F. Veracini entre Calle M. E, Norberto
+    Galdo Ballivian y, Cochabamba, Bolivia
+  </p>
+</div>
 
-            <div class="company-info">
-              <h1>CANEDO Tecnología Automotriz</h1>
-              <p>Diagnóstico, servicio y reparación automotriz</p>
-              <p><strong>Tel.:</strong> 4281133 · <strong>Cel.:</strong> 72222827 · <strong>Responsable:</strong> Rubén Zelaya</p>
-              <p><strong>Email:</strong> zcanedo3@hotmai.com</p>
-              <p><strong>Dirección:</strong> Calle F. Veracini entre Calle M. E, Norberto Galdo Ballivian y, Cochabamba, Bolivia</p>
-            </div>
+<div class="logo-box">
+  <img src="/images/caned-logo.png" alt="Z-CANEDO Tecnología Automotriz" />
+</div>
 
             <div class="document-meta">
               <strong>SOLICITUD DE REPUESTOS</strong>
@@ -110,107 +117,127 @@ function buildPrintStyles(): string {
         box-sizing: border-box;
       }
 
- @page {
-  size: letter landscape;
-  margin: 0;
+@page {
+  size: letter portrait;
+  margin: 8mm;
 }
 
 html,
 body {
-  width: 27.94cm;
-  min-height: 21.59cm;
+  width: auto;
+  min-height: auto;
   margin: 0;
   padding: 0;
 }
 
-      body {
-        color: #111827;
-        background: #ffffff;
-        font-family: Arial, Helvetica, sans-serif;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
+body {
+  color: #111827;
+  background: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
 
-    .print-document {
-  width: 27.94cm;
-  min-height: 21.59cm;
-  padding: 7mm 8mm;
+.print-document {
+  width: 100%;
+  max-width: 19.2cm;
+  min-height: 13.8cm;
+  height: auto;
+  margin: 0 auto;
+  padding: 0;
   background: #ffffff;
 }
 
-     .document-header {
+ .document-header {
   display: grid;
-  grid-template-columns: 185px 1fr 190px;
+  grid-template-columns: minmax(0, 1fr) 155px 185px;
   align-items: center;
-  gap: 16px;
-  padding-bottom: 10px;
+  gap: 12px;
+  padding: 8px 0 10px;
   border-bottom: 2px solid #001b4e;
 }
 
-      .logo-box {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+.company-info {
+  min-width: 0;
+}
 
-  .logo-box img {
-  max-width: 175px;
-  max-height: 78px;
+.company-info h1 {
+  margin: 0;
+  color: #001b4e;
+  font-size: 13.5px;
+  line-height: 1.1;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.company-info p {
+  margin: 2px 0 0;
+  color: #4b5563;
+  font-size: 7.8px;
+  line-height: 1.25;
+}
+
+.company-info strong {
+  color: #001b4e;
+  font-weight: 900;
+}
+
+.logo-box img {
+  max-width: 250px;
+  max-height: 75px;
+    border-radius: 10px;
   object-fit: contain;
 }
 
-      .company-info h1 {
-        margin: 0;
-        color: #001b4e;
-        font-size: 16px;
-        line-height: 1.1;
-        font-weight: 900;
-        text-transform: uppercase;
-      }
-
-      .company-info p {
-        margin: 2px 0 0;
-        color: #4b5563;
-        font-size: 8.2px;
-        line-height: 1.25;
-      }
 
       .company-info strong {
         color: #001b4e;
         font-weight: 900;
       }
 
+    
       .document-meta {
-        text-align: right;
-      }
+  text-align: right;
+  align-self: stretch;
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  padding: 8px 10px;
+  border-radius: 14px;
 
-      .document-meta strong {
-        display: block;
-        color: #001b4e;
-        font-size: 11px;
-        line-height: 1.2;
-        font-weight: 900;
-      }
+}
 
-      .document-meta span {
-        display: block;
-        margin-top: 4px;
-        color: #111827;
-        font-size: 16px;
-        font-weight: 900;
-      }
+.document-meta strong {
+  display: block;
+  max-width: 120px;
+  color: #001b4e;
+  font-size: 9px;
+  line-height: 1.15;
+  font-weight: 900;
+  text-transform: uppercase;
+}
 
-      .document-meta em {
-        display: inline-block;
-        margin-top: 5px;
-        padding: 4px 9px;
-        border-radius: 999px;
-        color: #9f1239;
-        background: #ffe4e6;
-        font-size: 8px;
-        font-style: normal;
-        font-weight: 900;
-      }
+.document-meta span {
+  display: block;
+  margin-top: 5px;
+  color: #001b4e;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 900;
+}
+
+.document-meta em {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #075985;
+  background: #e0f2fe;
+  font-size: 7.5px;
+  font-style: normal;
+  font-weight: 900;
+}
 
       .section-title {
         margin: 9px 0 5px;
@@ -222,10 +249,10 @@ body {
       }
 
       .data-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 5px;
-      }
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
 
       .data-item {
         min-height: 34px;
@@ -328,6 +355,20 @@ body {
       .parts-row strong {
         font-weight: 800;
       }
+
+.document-header,
+.data-item,
+.provider-box,
+.signature-grid,
+.legal-note {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.parts-table {
+  page-break-inside: auto;
+  break-inside: auto;
+}
 
     .signature-grid {
   display: grid;

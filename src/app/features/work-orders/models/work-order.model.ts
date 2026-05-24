@@ -1,7 +1,10 @@
 export type WorkOrderStatus = 'pending' | 'completed';
 
+export type WorkOrderChargeItemType = 'service' | 'supply';
+
 export interface WorkOrderChargeItem {
   id: string;
+  itemType: WorkOrderChargeItemType;
   description: string;
   quantity: number;
   amount: number;
@@ -27,6 +30,7 @@ export interface WorkOrder {
   mechanicName: string;
   problemDescription: string;
   workDescription: string;
+  recommendations: string;
 
   chargeItems: WorkOrderChargeItem[];
   totalAmount: number;
