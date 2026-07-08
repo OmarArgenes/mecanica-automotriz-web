@@ -38,11 +38,33 @@ export class LoginComponent {
         this.route.snapshot.queryParamMap.get('returnUrl') || '/dashboard';
 
       await this.router.navigateByUrl(returnUrl);
-    } catch {
-      this.errorMessage =
-        'No se pudo iniciar sesión. Verifica el correo y la contraseña.';
+    } catch (error: unknown) {
+      this.errorMessage = this.getLoginErrorMessage(error);
+      console.error('Error al iniciar sesión.', error);
     } finally {
       this.loading = false;
     }
+  }
+
+  private getLoginErrorMessage(error: unknown): string {
+    if (error instanceof TypeError || this.isNetworkError(error)) {
+      return 'No se pudo conectar con el servidor de autenticación. Verifica la conexión o la disponibilidad del servicio.';
+    }
+
+    return 'No se pudo iniciar sesión. Verifica el correo y la contraseña.';
+  }
+
+  private isNetworkError(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+      return false;
+    }
+
+    const message = error.message.toLowerCase();
+
+    return (
+      message.includes('failed to fetch') ||
+      message.includes('network') ||
+      message.includes('name_not_resolved')
+    );
   }
 }

@@ -11,37 +11,18 @@ export class AuthService {
   private readonly userSignal = signal<User | null>(null);
 
   private readonly loginDateStorageKey = 'workshop_login_date';
+  private readonly initializationPromise: Promise<void>;
 
   readonly session = this.sessionSignal.asReadonly();
   readonly user = this.userSignal.asReadonly();
 
   constructor() {
-    void this.loadSession();
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      this.sessionSignal.set(session);
-      this.userSignal.set(session?.user ?? null);
-    });
-  }
-
-  async loadSession(): Promise<void> {
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error || !data.session) {
-      this.clearLocalSession();
-      return;
-    }
-
-    if (!this.isLoginFromToday()) {
-      await this.signOut();
-      return;
-    }
-
-    this.sessionSignal.set(data.session);
-    this.userSignal.set(data.session.user);
+    this.initializationPromise = this.initializeAuth();
   }
 
   async signIn(email: string, password: string): Promise<void> {
+    await this.initializationPromise;
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
@@ -52,26 +33,26 @@ export class AuthService {
     }
 
     this.saveTodayLoginDate();
-
-    this.sessionSignal.set(data.session);
-    this.userSignal.set(data.user);
+    this.applySession(data.session);
   }
 
   async signOut(): Promise<void> {
+    await this.initializationPromise;
+
     const { error } = await supabase.auth.signOut();
+    this.clearLocalSession();
 
     if (error) {
       throw new Error(error.message);
     }
-
-    this.clearLocalSession();
   }
 
   async isAuthenticated(): Promise<boolean> {
-    const { data, error } = await supabase.auth.getSession();
+    await this.initializationPromise;
 
-    if (error || !data.session) {
-      this.clearLocalSession();
+    const session = this.sessionSignal();
+
+    if (!session) {
       return false;
     }
 
@@ -80,10 +61,46 @@ export class AuthService {
       return false;
     }
 
-    this.sessionSignal.set(data.session);
-    this.userSignal.set(data.session.user);
-
     return true;
+  }
+
+  private async initializeAuth(): Promise<void> {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
+        this.clearLocalSession();
+        return;
+      }
+
+      if (!this.isLoginFromToday()) {
+        const { error: signOutError } = await supabase.auth.signOut();
+        this.clearLocalSession();
+
+        if (signOutError) {
+          console.error(
+            'No se pudo cerrar una sesión anterior durante la inicialización.',
+            signOutError,
+          );
+        }
+
+        return;
+      }
+
+      this.applySession(data.session);
+    } catch (error) {
+      this.clearLocalSession();
+      console.error('No se pudo inicializar la sesión de autenticación.', error);
+    } finally {
+      supabase.auth.onAuthStateChange((_event, session) => {
+        this.applySession(session);
+      });
+    }
+  }
+
+  private applySession(session: Session | null): void {
+    this.sessionSignal.set(session);
+    this.userSignal.set(session?.user ?? null);
   }
 
   private saveTodayLoginDate(): void {
@@ -97,12 +114,16 @@ export class AuthService {
   }
 
   private getTodayKey(): string {
-    return new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 
   private clearLocalSession(): void {
     sessionStorage.removeItem(this.loginDateStorageKey);
-    this.sessionSignal.set(null);
-    this.userSignal.set(null);
+    this.applySession(null);
   }
 }
